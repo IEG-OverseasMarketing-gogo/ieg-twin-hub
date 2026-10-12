@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IEG Back-End Semiconductor Simulator — Curriculum Roadmap</title>
+<style>
+  :root{
+    --bg-0:#48494E; --bg-1:#55565C; --bg-2:#63646A; --line:#797A80;
+    --cobalt:#5B84FF; --teal:#2FE3C9; --amber:#D9A441; --red:#E4342B;
+    --text-0:#F7F7F8; --text-1:#C7C8CC; --text-2:#9A9BA1;
+    --mono:'JetBrains Mono','SFMono-Regular',Consolas,Menlo,monospace;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg-0);color:var(--text-0);font-family:var(--sans);}
+  body{background-image:
+    radial-gradient(ellipse 800px 420px at 8% -8%, rgba(125,143,214,0.18), transparent 55%),
+    radial-gradient(ellipse 700px 400px at 40% -12%, rgba(87,201,194,0.16), transparent 55%),
+    radial-gradient(ellipse 700px 400px at 72% -8%, rgba(127,206,122,0.13), transparent 55%),
+    radial-gradient(ellipse 800px 450px at 100% 10%, rgba(214,154,90,0.15), transparent 58%),
+    radial-gradient(ellipse 700px 420px at 115% 30%, rgba(201,106,143,0.13), transparent 58%);
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 80px;}
+  header{border-bottom:1px solid var(--line);padding:20px 0;display:flex;align-items:center;gap:10px;}
+  header .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--teal);text-transform:uppercase;}
+  header .name{font-size:13px;color:var(--text-1);margin-top:1px;}
+
+  .hero{padding:56px 0 36px;border-bottom:1px solid var(--line);}
+  .hero h1{font-size:clamp(26px,4vw,38px);line-height:1.2;font-weight:800;margin:14px 0 10px;}
+  .hero .sub{font-size:14px;color:var(--text-1);line-height:1.7;max-width:720px;}
+  .hero-stats{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap;}
+  .stat .num{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--teal);}
+  .stat .lbl{font-family:var(--mono);font-size:9.5px;color:var(--text-2);letter-spacing:.08em;margin-top:2px;max-width:140px;}
+
+  h2.section{font-size:20px;font-weight:800;margin:52px 0 6px;color:var(--text-0);}
+  .section-note{font-size:13px;color:var(--text-1);margin-bottom:20px;}
+
+  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .layer-card{background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:20px;}
+  .layer-card .ltag{font-family:var(--mono);font-size:10px;color:var(--cobalt);letter-spacing:.1em;}
+  .layer-card h3{font-size:16px;margin:6px 0 8px;}
+  .layer-card p{font-size:12.5px;color:var(--text-1);line-height:1.6;margin:0 0 12px;}
+  .layer-card .sku{font-family:var(--mono);font-size:10.5px;color:var(--amber);border-top:1px solid var(--line);padding-top:10px;}
+
+  .flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .flow .mod{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:140px;}
+  .flow .mod .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;}
+  .flow .mod .mname{font-size:13px;font-weight:700;margin-top:4px;}
+  .flow .mod .msub{font-size:10.5px;color:var(--text-2);margin-top:2px;}
+  .flow .mod .mh{font-family:var(--mono);font-size:10px;color:var(--teal);margin-top:6px;}
+  .flow .arrow{color:var(--text-2);font-size:16px;}
+
+  details.mod-detail{background:var(--bg-1);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden;}
+  details.mod-detail summary{cursor:pointer;padding:16px 20px;font-size:15px;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px;}
+  details.mod-detail summary::-webkit-details-marker{display:none;}
+  details.mod-detail summary::before{content:'▸';color:var(--teal);transition:.2s;}
+  details.mod-detail[open] summary::before{transform:rotate(90deg);}
+  .mod-body{padding:0 20px 20px;}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:12px;}
+  th{background:var(--bg-2);color:var(--text-1);font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:8px 10px;border:1px solid var(--line);}
+  td{padding:8px 10px;border:1px solid var(--line);color:var(--text-0);vertical-align:top;}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02);}
+  h4.subhead{font-size:12.5px;color:var(--teal);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;margin:18px 0 4px;}
+
+  .assess-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px;}
+  .assess-card{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:12px;}
+  .assess-card .pts{font-family:var(--mono);font-size:18px;color:var(--amber);font-weight:700;}
+  .assess-card .label{font-size:11px;color:var(--text-1);margin:2px 0 8px;}
+  .assess-card ul{margin:0;padding-left:16px;font-size:11px;color:var(--text-1);line-height:1.6;}
+  .pass-line{font-family:var(--mono);font-size:11px;color:var(--teal);margin-top:10px;}
+
+  .gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .gap-card{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .gap-card .gtitle{font-size:13px;font-weight:700;color:var(--teal);margin-bottom:6px;}
+  .gap-card p{font-size:12px;color:var(--text-1);line-height:1.6;margin:0;}
+
+  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .price-card{background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:22px;position:relative;}
+  .price-card.featured{border-color:var(--cobalt);}
+  .price-card .badge{position:absolute;top:-11px;right:16px;background:var(--cobalt);color:#fff;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:20px;}
+  .price-card h3{font-size:17px;margin:0 0 4px;}
+  .price-card .audience{font-size:11.5px;color:var(--text-2);margin-bottom:14px;}
+  .price-card ul{list-style:none;padding:0;margin:0 0 14px;font-size:12px;color:var(--text-1);line-height:1.9;}
+  .price-card ul li.no{color:var(--text-2);}
+  .price-card .price{font-family:var(--mono);font-size:13px;color:var(--amber);border-top:1px solid var(--line);padding-top:12px;}
+
+  .roadmap{border-left:2px solid var(--line);padding-left:20px;margin-top:10px;}
+  .phase{margin-bottom:22px;position:relative;}
+  .phase::before{content:'';position:absolute;left:-25px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--cobalt);}
+  .phase.done::before{background:var(--teal);}
+  .phase .ptag{font-family:var(--mono);font-size:10px;color:var(--cobalt);letter-spacing:.08em;}
+  .phase.done .ptag{color:var(--teal);}
+  .phase h3{font-size:14.5px;margin:4px 0 6px;}
+  .phase p{font-size:12px;color:var(--text-1);line-height:1.6;margin:0;}
+
+  footer{border-top:1px solid var(--line);margin-top:60px;padding:20px 0;font-size:11px;color:var(--text-2);}
+
+  @media (max-width:720px){
+    .layers, .gap-grid, .pricing, .assess-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="kicker">IEG Co., Ltd.</div>
+      <div class="name">Back-End Semiconductor TVET</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>Back-End Semiconductor Simulator<br>Curriculum Framework</h1>
+    <p class="sub">Die Bonding → Wire Bonding → Molding → Saw/Dicing → Package Testing. A 5-process × 3-layer architecture built for TAFE Arabia / TVTC delivery, grounded in Meister High curriculum standards.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="num">5</div><div class="lbl">BACK-END MODULES</div></div>
+      <div class="stat"><div class="num">120h</div><div class="lbl">TOTAL INSTRUCTION HOURS</div></div>
+      <div class="stat"><div class="num">3</div><div class="lbl">COMMERCIAL LAYERS (SKUs)</div></div>
+      <div class="stat"><div class="num">36k+</div><div class="lbl">TAFE ARABIA GRADUATE BASE</div></div>
+      <div class="stat"><div class="num">TVTC</div><div class="lbl">CERTIFICATION LINKAGE TARGET</div></div>
+    </div>
+  </section>
+
+  <h2 class="section">3-Layer Architecture</h2>
+  <p class="section-note">A phased SKU structure that lets partners adopt based on their existing equipment ownership.</p>
+  <div class="layers">
+    <div class="layer-card">
+      <div class="ltag">LAYER 1</div>
+      <h3>SW Simulator</h3>
+      <p>PC/tablet-based 3D process simulation. A complete loop from parameter manipulation → defect generation → diagnosis, with no physical equipment required. Emotii Arabic UI supported.</p>
+      <div class="sku">Lite — Standalone SW license</div>
+    </div>
+    <div class="layer-card">
+      <div class="ltag">LAYER 2</div>
+      <h3>Real-Equipment Integration</h3>
+      <p>Connects to IEG's physical equipment (Die Bonder · Wire Bonder · Mold Press · Dicing · Bond Tester) via OPC-UA/EtherCAT, so Layer 1 recipes can be verified on real hardware.</p>
+      <div class="sku">Standard — L1 + equipment bundle</div>
+    </div>
+    <div class="layer-card">
+      <div class="ltag">LAYER 3</div>
+      <h3>Automated Assessment · Certification</h3>
+      <p>Auto-generates I/O lists, Pass/Fail matrices, SPC control charts, and competency rubrics. SCORM LMS integration, with TVTC certification consulting included.</p>
+      <div class="sku">Full — L1 + L2 + L3 + TVTC linkage</div>
+    </div>
+  </div>
+
+  <h2 class="section">5-Process Flow</h2>
+  <p class="section-note">Click each module below for the detailed session-by-session curriculum.</p>
+  <div class="flow">
+    <div class="mod"><span class="dot" style="background:#E4342B"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-2);">MODULE 01</span><div class="mname">Die Bonding</div><div class="msub">Epoxy Dispense · Pick & Place · Cure</div><div class="mh">24h</div></div>
+    <div class="arrow">→</div>
+    <div class="mod"><span class="dot" style="background:#3D6BFF"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-2);">MODULE 02</span><div class="mname">Wire Bonding</div><div class="msub">EFO · Loop · Vision Alignment</div><div class="mh">24h</div></div>
+    <div class="arrow">→</div>
+    <div class="mod"><span class="dot" style="background:#2FA875"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-2);">MODULE 03</span><div class="mname">Molding</div><div class="msub">EMC · PID Control · Six Sigma Analysis</div><div class="mh">24h</div></div>
+    <div class="arrow">→</div>
+    <div class="mod"><span class="dot" style="background:#8A5AFF"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-2);">MODULE 04</span><div class="mname">Saw / Dicing</div><div class="msub">SFC Design · EtherCAT · Reject Logic</div><div class="mh">24h</div></div>
+    <div class="arrow">→</div>
+    <div class="mod"><span class="dot" style="background:#D9A441"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-2);">MODULE 05</span><div class="mname">Package Testing</div><div class="msub">AOI · X-ray · Bond Test · SPC</div><div class="mh">24h</div></div>
+  </div>
+
+  <h2 class="section">Module Detail</h2>
+  <p class="section-note">Theory sessions, L1 simulator exercises, L2 real-equipment exercises, and assessment criteria for each module.</p>
+
+  <details class="mod-detail" open>
+    <summary>Module 01 — Die Bonding</summary>
+    <div class="mod-body">
+      <h4 class="subhead">Theory Sessions</h4>
+      <table>
+        <tr><th>Session</th><th>Topic</th><th>Key Concepts</th></tr>
+        <tr><td>1-1</td><td>Back-End overview and Die Bonding's place in the flow</td><td>Wafer → chip → package flow, process purpose</td></tr>
+        <tr><td>1-2</td><td>Adhesive material properties</td><td>Epoxy viscosity, DAF (Die Attach Film), conductive/insulating types</td></tr>
+        <tr><td>1-3</td><td>Pick-and-place mechanism</td><td>Collet, vacuum pickup, alignment precision (±µm)</td></tr>
+        <tr><td>1-4</td><td>Process defect types and root-cause analysis</td><td>Void, misalignment, tilt, epoxy bleed</td></tr>
+        <tr><td>1-5</td><td>PLC-based automation control fundamentals</td><td>Sequence control, I/O maps, scan cycle</td></tr>
+      </table>
+      <h4 class="subhead">L1 Simulator Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>Assessment Criteria</th></tr>
+        <tr><td>DB-L1-01</td><td>Manipulate epoxy viscosity/temperature parameters → observe dispense pattern change</td><td>Derive optimal parameter range</td></tr>
+        <tr><td>DB-L1-02</td><td>Write PLC ladder logic for the pick-and-place sequence</td><td>I/O list completeness</td></tr>
+        <tr><td>DB-L1-03</td><td>Intentionally generate defects (3 void types, 2 misalignment types) → diagnose cause</td><td>Diagnostic accuracy ≥80%</td></tr>
+        <tr><td>DB-L1-04</td><td>Set pass/fail criteria and link to AOI parameters</td><td>Complete a Pass/Fail matrix</td></tr>
+        <tr><td>DB-L1-05</td><td>Integrated run: complete Die Attach → Cure sequence</td><td>Process completion rate, defect rate ≤2%</td></tr>
+      </table>
+      <h4 class="subhead">L2 Real-Equipment Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>IEG Equipment</th></tr>
+        <tr><td>DB-L2-01</td><td>Verify OPC-UA connection to the IEG Die Bonder's PLC</td><td>IEG Die Bonder</td></tr>
+        <tr><td>DB-L2-02</td><td>Upload L1 recipe to real equipment and compare</td><td>Real I/O signal monitoring</td></tr>
+        <tr><td>DB-L2-03</td><td>Optimize parameters based on real-equipment data feedback</td><td>Epoxy cure data analysis</td></tr>
+      </table>
+      <h4 class="subhead">Assessment (100 pts)</h4>
+      <div class="assess-grid">
+        <div class="assess-card"><div class="pts">30 pts</div><div class="label">Written Exam</div><ul><li>Describe process principles</li><li>5+ defect types</li><li>PLC concept check</li></ul></div>
+        <div class="assess-card"><div class="pts">50 pts</div><div class="label">L1 Simulator Portfolio</div><ul><li>PLC I/O list (10)</li><li>3 defect diagnosis reports (20)</li><li>Pass/Fail matrix (10)</li><li>Run log (10)</li></ul></div>
+        <div class="assess-card"><div class="pts">20 pts</div><div class="label">L2 Real-Equipment Confirmation</div><ul><li>OPC-UA connection check</li><li>Recipe comparison report</li><li>Parameter optimization rationale</li></ul></div>
+      </div>
+      <div class="pass-line">Pass: 60+ total | Defect-rate target: ≤2% | Parameter optimality: 5 of 7 in range</div>
+    </div>
+  </details>
+
+  <details class="mod-detail">
+    <summary>Module 02 — Wire Bonding</summary>
+    <div class="mod-body">
+      <h4 class="subhead">Theory Sessions</h4>
+      <table>
+        <tr><th>Session</th><th>Topic</th><th>Key Concepts</th></tr>
+        <tr><td>2-1</td><td>Wire Bonding principles</td><td>Ball bond, wedge bond, thermocompression mechanism</td></tr>
+        <tr><td>2-2</td><td>Wire material and capillary</td><td>Au/Cu/Al wire, diameter selection criteria</td></tr>
+        <tr><td>2-3</td><td>EFO current and loop parameters</td><td>Ball size, loop height, bond force</td></tr>
+        <tr><td>2-4</td><td>Vision alignment systems</td><td>Eye-point recognition, coordinate correction</td></tr>
+        <tr><td>2-5</td><td>Defect type analysis</td><td>Short, open, wire sag, ball lift, heel crack</td></tr>
+      </table>
+      <h4 class="subhead">L1 Simulator Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>Assessment Criteria</th></tr>
+        <tr><td>WB-L1-01</td><td>Simulate ball-size change vs. EFO current</td><td>Derive optimal EFO range</td></tr>
+        <tr><td>WB-L1-02</td><td>Adjust loop height → optimize wire profile</td><td>Loop height Cpk ≥1.33</td></tr>
+        <tr><td>WB-L1-03</td><td>Inject vision-alignment error → observe bond-position deviation</td><td>Execute correction procedure</td></tr>
+        <tr><td>WB-L1-04</td><td>Generate and diagnose 5 defect types</td><td>Diagnostic accuracy ≥80%</td></tr>
+        <tr><td>WB-L1-05</td><td>Complete a multi-die package wire map</td><td>Detect wire-map collisions</td></tr>
+      </table>
+      <h4 class="subhead">L2 Real-Equipment Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>IEG Equipment</th></tr>
+        <tr><td>WB-L2-01</td><td>Upload IEG Wire Bonder recipe and compare parameters</td><td>IEG Wire Bonder</td></tr>
+        <tr><td>WB-L2-02</td><td>Acquire real Bond Tester data → analyze Pull/Shear strength</td><td>Bond Tester</td></tr>
+        <tr><td>WB-L2-03</td><td>Re-optimize parameters based on real-equipment data</td><td>Write comparison report</td></tr>
+      </table>
+      <h4 class="subhead">Assessment (100 pts)</h4>
+      <div class="assess-grid">
+        <div class="assess-card"><div class="pts">30 pts</div><div class="label">Written Exam</div><ul><li>Wire Bonding principles</li><li>Describe 5 defect types</li></ul></div>
+        <div class="assess-card"><div class="pts">50 pts</div><div class="label">L1 Portfolio</div><ul><li>EFO optimization rationale</li><li>Loop profile (Cpk)</li><li>3 defect diagnoses</li><li>Wire map</li></ul></div>
+        <div class="assess-card"><div class="pts">20 pts</div><div class="label">L2 + Bond Test Interpretation</div><ul><li>Pull/Shear strength data</li><li>Comparative analysis report</li></ul></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="mod-detail">
+    <summary>Module 03 — Molding</summary>
+    <div class="mod-body">
+      <h4 class="subhead">Theory Sessions</h4>
+      <table>
+        <tr><th>Session</th><th>Topic</th><th>Key Concepts</th></tr>
+        <tr><td>3-1</td><td>Molding purpose and materials</td><td>EMC (Epoxy Molding Compound) properties, filler content</td></tr>
+        <tr><td>3-2</td><td>Transfer vs. Compression Molding</td><td>Process comparison, applicable package types</td></tr>
+        <tr><td>3-3</td><td>Temperature/pressure/time parameters</td><td>Cure profile, viscosity behavior</td></tr>
+        <tr><td>3-4</td><td>PID control principles</td><td>P/I/D gain, overshoot, settling time</td></tr>
+        <tr><td>3-5</td><td>Defect type analysis</td><td>Void, incomplete runner fill, delamination, warpage</td></tr>
+      </table>
+      <h4 class="subhead">L1 Simulator Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>Assessment Criteria</th></tr>
+        <tr><td>MO-L1-01</td><td>Design a cure temperature profile (preheat → cure → cool)</td><td>Reach Tg, complete the profile</td></tr>
+        <tr><td>MO-L1-02</td><td>Simulate PID gain tuning</td><td>Overshoot ≤5%, settling time ≤30s</td></tr>
+        <tr><td>MO-L1-03</td><td>Manipulate pressure profile → observe runner-fill behavior</td><td>Fill completion rate ≥99%</td></tr>
+        <tr><td>MO-L1-04</td><td>Generate void/runner defects → output SPC control chart</td><td>Calculate Cp/Cpk</td></tr>
+        <tr><td>MO-L1-05</td><td>Six Sigma analysis: calculate process capability index and simulate improvement</td><td>Plan to reach Cpk ≥1.33</td></tr>
+      </table>
+      <h4 class="subhead">L2 Real-Equipment Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>IEG Equipment</th></tr>
+        <tr><td>MO-L2-01</td><td>Acquire real analog PID signal from the IEG Mold Press</td><td>IEG Mold Press</td></tr>
+        <tr><td>MO-L2-02</td><td>Compare simulator temperature profile vs. real equipment</td><td>Root-cause temperature deviation</td></tr>
+        <tr><td>MO-L2-03</td><td>Measure real warpage → correct parameters</td><td>Thickness gauge, flatness meter</td></tr>
+      </table>
+      <h4 class="subhead">Assessment (100 pts)</h4>
+      <div class="assess-grid">
+        <div class="assess-card"><div class="pts">30 pts</div><div class="label">Written Exam</div><ul><li>EMC properties</li><li>PID control principles</li></ul></div>
+        <div class="assess-card"><div class="pts">50 pts</div><div class="label">L1 Portfolio</div><ul><li>Cure profile design</li><li>PID tuning rationale</li><li>SPC control chart</li><li>Cpk calculation</li></ul></div>
+        <div class="assess-card"><div class="pts">20 pts</div><div class="label">L2 Real-Equipment Comparison</div><ul><li>Real vs. sim comparison</li><li>Warpage measurement log</li></ul></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="mod-detail">
+    <summary>Module 04 — Saw / Dicing</summary>
+    <div class="mod-body">
+      <h4 class="subhead">Theory Sessions</h4>
+      <table>
+        <tr><th>Session</th><th>Topic</th><th>Key Concepts</th></tr>
+        <tr><td>4-1</td><td>Dicing purpose and methods</td><td>Blade dicing, laser dicing, stealth dicing</td></tr>
+        <tr><td>4-2</td><td>Blade selection criteria</td><td>Diamond grit, bond material, thickness application</td></tr>
+        <tr><td>4-3</td><td>Role of coolant (DI water)</td><td>Chip removal, thermal management, flow control</td></tr>
+        <tr><td>4-4</td><td>SFC design principles</td><td>Stage-transition conditions, interlock design</td></tr>
+        <tr><td>4-5</td><td>EtherCAT-based vision-sensor integration</td><td>Master-slave architecture, closing the cycle-time gap</td></tr>
+      </table>
+      <h4 class="subhead">L1 Simulator Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>Assessment Criteria</th></tr>
+        <tr><td>SA-L1-01</td><td>Design the cutting-sequence SFC (init → align → cut → inspect → eject)</td><td>SFC completeness</td></tr>
+        <tr><td>SA-L1-02</td><td>Optimize the blade-speed / coolant-flow combination</td><td>Chipping rate ≤0.5%</td></tr>
+        <tr><td>SA-L1-03</td><td>Design reject-diverter logic (auto-separate defective die)</td><td>Misclassification rate ≤1%</td></tr>
+        <tr><td>SA-L1-04</td><td>Simulate EtherCAT vision-sensor signal processing</td><td>Close the alignment-precision gap</td></tr>
+        <tr><td>SA-L1-05</td><td>Simulate a recipe changeover (Product A → B)</td><td>Changeover time, zero errors</td></tr>
+      </table>
+      <h4 class="subhead">L2 Real-Equipment Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>IEG Equipment</th></tr>
+        <tr><td>SA-L2-01</td><td>Monitor EtherCAT signals on the IEG Dicing System</td><td>IEG Dicing System</td></tr>
+        <tr><td>SA-L2-02</td><td>Upload and verify L1 SFC logic on the real PLC</td><td>PLC programmer</td></tr>
+        <tr><td>SA-L2-03</td><td>Real-equipment recipe changeover + cut-quality measurement</td><td>Microscope, thickness gauge</td></tr>
+      </table>
+      <h4 class="subhead">Assessment (100 pts)</h4>
+      <div class="assess-grid">
+        <div class="assess-card"><div class="pts">30 pts</div><div class="label">Written Exam</div><ul><li>Compare dicing methods</li><li>SFC design principles</li></ul></div>
+        <div class="assess-card"><div class="pts">50 pts</div><div class="label">L1 Portfolio</div><ul><li>SFC design diagram</li><li>Reject logic</li><li>EtherCAT configuration</li><li>Changeover log</li></ul></div>
+        <div class="assess-card"><div class="pts">20 pts</div><div class="label">L2 PLC Upload Confirmation</div><ul><li>Real PLC verification record</li><li>Cut-quality measurement results</li></ul></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="mod-detail">
+    <summary>Module 05 — Package Testing</summary>
+    <div class="mod-body">
+      <h4 class="subhead">Theory Sessions</h4>
+      <table>
+        <tr><th>Session</th><th>Topic</th><th>Key Concepts</th></tr>
+        <tr><td>5-1</td><td>Package inspection purpose and systems</td><td>AQL sampling, 100% vs. statistical inspection</td></tr>
+        <tr><td>5-2</td><td>AOI principles</td><td>Illumination design, algorithms, defect classification</td></tr>
+        <tr><td>5-3</td><td>X-ray inspection</td><td>Interpreting internal defects (void, delamination)</td></tr>
+        <tr><td>5-4</td><td>Bond Tester (Pull/Shear strength)</td><td>Destructive testing, strength criteria, Weibull distribution</td></tr>
+        <tr><td>5-5</td><td>Designing pass/fail criteria</td><td>Spec setting, Cpk-based acceptance criteria</td></tr>
+      </table>
+      <h4 class="subhead">L1 Simulator Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>Assessment Criteria</th></tr>
+        <tr><td>PT-L1-01</td><td>AOI defect-pattern classification exercise (50-image set)</td><td>Classification accuracy ≥90%</td></tr>
+        <tr><td>PT-L1-02</td><td>X-ray image reading training (distinguish void vs. delamination)</td><td>Reading accuracy ≥85%</td></tr>
+        <tr><td>PT-L1-03</td><td>Design pass/fail criteria → apply to simulator</td><td>False-accept rate ≤0.1%</td></tr>
+        <tr><td>PT-L1-04</td><td>SPC — inspection data analysis</td><td>Interpret control charts, detect out-of-control signals</td></tr>
+        <tr><td>PT-L1-05</td><td>Write a comprehensive quality report (including defect map)</td><td>Report completeness, improvement proposals</td></tr>
+      </table>
+      <h4 class="subhead">L2 Real-Equipment Exercises</h4>
+      <table>
+        <tr><th>Code</th><th>Content</th><th>IEG Equipment</th></tr>
+        <tr><td>PT-L2-01</td><td>Measure real Pull/Shear strength on the IEG Bond Tester</td><td>IEG Bond Tester</td></tr>
+        <tr><td>PT-L2-02</td><td>Acquire real AOI data → compare against simulator results</td><td>AOI equipment</td></tr>
+        <tr><td>PT-L2-03</td><td>X-ray hands-on: inspect and read a real package</td><td>X-ray inspection equipment</td></tr>
+      </table>
+      <h4 class="subhead">Assessment (100 pts)</h4>
+      <div class="assess-grid">
+        <div class="assess-card"><div class="pts">30 pts</div><div class="label">Written Exam</div><ul><li>Inspection methodology</li><li>Pass/fail criteria design</li></ul></div>
+        <div class="assess-card"><div class="pts">50 pts</div><div class="label">L1 Portfolio</div><ul><li>AOI classification results (90%+)</li><li>X-ray reading report</li><li>Pass/fail criteria design doc</li><li>SPC control chart</li></ul></div>
+        <div class="assess-card"><div class="pts">20 pts</div><div class="label">L2 Real-Equipment Inspection Record</div><ul><li>Bond Test measured data</li><li>X-ray hands-on reading log</li></ul></div>
+      </div>
+    </div>
+  </details>
+
+  <h2 class="section">BTEC Mapping — Gap Closure Status</h2>
+  <p class="section-note">How the six gaps identified in the original mapping document are addressed by the simulator design.</p>
+  <div class="gap-grid">
+    <div class="gap-card"><div class="gtitle">✓ Gap 1 — Industrial Network Protocols</div><p>Closed by SA-L1-04 (EtherCAT vision-sensor simulation) + SA-L2-01 (real-signal monitoring). A Profinet simulation module is planned.</p></div>
+    <div class="gap-card"><div class="gtitle">✓ Gap 2 — Analog I/O &amp; PID Control</div><p>Closed by MO-L1-02 (PID gain tuning) + MO-L2-01 (real signal acquisition from the Mold Press). Temperature-profile comparison analysis is the key evidence artifact.</p></div>
+    <div class="gap-card"><div class="gtitle">✓ Gap 3 — SFC Software Design Tools</div><p>Two dedicated SFC-design sessions built around SA-L1-01. The Die Bond → Wire Bond → Mold → Eject sequence is designed as an SFC, then verified at L2.</p></div>
+    <div class="gap-card"><div class="gtitle">✓ Gap 4 — Cleanroom Panel Design Constraints</div><p>A shared theory session across DB/WB/MO covering ESD-safe wiring, sealing ratings, and particle-reduction design, with an IEG real cleanroom-panel case study.</p></div>
+    <div class="gap-card"><div class="gtitle">✓ Gap 5 — Individual Performance Self-Assessment Rubric</div><p>The L3 assessment system embeds a bilingual (Arabic/English) self-assessment form across four axes: technical competency, time management, communication, and industry readiness.</p></div>
+    <div class="gap-card"><div class="gtitle">✓ Gap 6 — BTEC Evidence Formatting</div><p>L3's automated reports generate I/O lists, test matrices, and observation records that match BTEC Aim A–D standards, with PDF export.</p></div>
+  </div>
+
+  <h2 class="section">Three Commercial Packages</h2>
+  <p class="section-note">For TAFE Arabia and TVTC partner institutions.</p>
+  <div class="pricing">
+    <div class="price-card">
+      <h3>Lite</h3>
+      <div class="audience">Institutions without equipment · remote pre-learning</div>
+      <ul>
+        <li>✓ Layer 1 SW license (all 5 processes)</li>
+        <li>✓ Curriculum documentation (Arabic/English)</li>
+        <li>✓ Emotii Arabic UI</li>
+        <li>✓ L3 automated assessment reports (basic)</li>
+        <li class="no">— IEG real equipment</li>
+        <li class="no">— TVTC certification consulting</li>
+      </ul>
+      <div class="price">Annual license — contact for pricing</div>
+    </div>
+    <div class="price-card featured">
+      <div class="badge">RECOMMENDED</div>
+      <h3>Standard</h3>
+      <div class="audience">TVET centers · TAFE Arabia operations</div>
+      <ul>
+        <li>✓ Layer 1 SW license (5 processes)</li>
+        <li>✓ IEG back-end equipment set (L2)</li>
+        <li>✓ OPC-UA / EtherCAT integration</li>
+        <li>✓ Curriculum docs + Train-the-Trainer workshop</li>
+        <li>✓ L3 automated assessment, full version</li>
+        <li class="no">— TVTC certification consulting</li>
+      </ul>
+      <div class="price">Equipment-inclusive — contact for pricing</div>
+    </div>
+    <div class="price-card">
+      <h3>Full</h3>
+      <div class="audience">Government bodies · large enterprises · official TVTC certification</div>
+      <ul>
+        <li>✓ Layers 1 + 2 + 3, complete</li>
+        <li>✓ TVTC training-program registration support</li>
+        <li>✓ Emotii live Arabic interpretation</li>
+        <li>✓ SCORM LMS integration</li>
+        <li>✓ Annual curriculum updates</li>
+        <li>✓ NQF Level 3 equivalence pursuit</li>
+      </ul>
+      <div class="price">Full package — contact for pricing</div>
+    </div>
+  </div>
+
+  <h2 class="section">Development Roadmap — 2026 H2 Execution Plan</h2>
+  <div class="roadmap">
+    <div class="phase done">
+      <div class="ptag">PHASE 0 — COMPLETE</div>
+      <h3>BTEC × Meister High Mapping Complete</h3>
+      <p>Full mapping of 5 processes × BTEC Aims A–D, with all 6 gap items defined. Based on the mapping document (Apr 2025).</p>
+    </div>
+    <div class="phase">
+      <div class="ptag">PHASE 1 — CURRENT (2026 Q2)</div>
+      <h3>Curriculum Framework Finalized + Die Bonding Simulator Prototype</h3>
+      <p>Curriculum documentation v1.0 complete across 5 processes × 3 layers. Die Bonding L1 simulator demo version complete, used as TAFE Arabia meeting material.</p>
+    </div>
+    <div class="phase">
+      <div class="ptag">PHASE 2 — 2026 Q3</div>
+      <h3>5-Process L1 Simulator Complete + Arabic UI (Emotii)</h3>
+      <p>Wire Bonding, Molding, Saw/Dicing, and Package Testing simulators developed. Emotii Arabic interface integrated. TAFE Arabia pilot operation begins.</p>
+    </div>
+    <div class="phase">
+      <div class="ptag">PHASE 3 — 2026 Q4</div>
+      <h3>L2 Equipment Integration + L3 Assessment Automation</h3>
+      <p>OPC-UA/EtherCAT bridge developed. Automated BTEC evidence-report generation. SCORM LMS packaging. TVTC training-program registration submitted.</p>
+    </div>
+    <div class="phase">
+      <div class="ptag">PHASE 4 — 2027 Q1+</div>
+      <h3>Official TVTC Approval + Middle East Expansion</h3>
+      <p>TVTC NQF Level 3 equivalence. Expansion to Al Asala College (UAE) and additional GCC institutions. Enterprise delivery track launched (Alat, SABIC).</p>
+    </div>
+  </div>
+
+  <footer>
+    IEG Co., Ltd. · Back-End Semiconductor Simulator Curriculum Framework v1.0 · 2026.06<br>
+    7 Sunhwan-ro 198beon-gil, Jungwon-gu, Seongnam-si, Gyeonggi-do, Korea
+  </footer>
+
+</div>
+</body>
+</html>

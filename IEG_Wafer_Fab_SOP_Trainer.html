@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IEG Wafer Fab SOP Trainer | Digital Twin Suite</title>
+<style>
+  :root{
+    --bg-0:#48494E; --bg-1:#55565C; --bg-2:#63646A; --line:#797A80;
+    --red:#D0302A; --red-dim:#7A231F; --gold:#F4CB7A; --teal:#2FE3C9; --ok:#98DE92; --warn:#F4CB7A; --bad:#FFC0BA;
+    --text-0:#F7F7F8; --text-1:#DADBDF; --text-2:#D0D1D6;
+    --mono:'JetBrains Mono','SFMono-Regular',Consolas,Menlo,monospace;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg-0);color:var(--text-0);font-family:var(--sans);font-size:14px;line-height:1.5}
+  body{background-image:
+    radial-gradient(ellipse 800px 420px at 8% -8%, rgba(125,143,214,.16), transparent 55%),
+    radial-gradient(ellipse 700px 400px at 60% -12%, rgba(87,201,194,.14), transparent 55%),
+    radial-gradient(ellipse 800px 450px at 100% 6%, rgba(214,154,90,.13), transparent 58%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px}
+  header{border-bottom:1px solid var(--line);padding:18px 0;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between}
+  header h1{font-size:20px;margin:0;font-weight:800;letter-spacing:-.01em}
+  header .sub{color:var(--text-1);font-size:12.5px;margin-top:2px;max-width:560px}
+  .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--text-1);padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+  .seg button:not([aria-pressed="true"]):hover{background:var(--bg-1)}
+  .btn,select.btn{background:var(--bg-1);border:1px solid var(--line);color:var(--text-0);padding:8px 14px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
+  .btn:hover:not(:disabled){background:var(--bg-2)}
+  .btn.primary{background:var(--red);border-color:var(--red)}
+  .btn.primary:hover:not(:disabled){background:#c72c24}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .notice{margin:16px 0 0;padding:10px 14px;border:1px solid var(--red-dim);border-radius:10px;background:rgba(122,35,31,.28);color:var(--text-0);font-size:12.5px}
+  .notice b{color:var(--gold)}
+  .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:16px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr}.layout>.stack:nth-child(2){order:-1}}
+  .scrollx{overflow-x:auto}
+  #reportCard{overflow-x:auto}
+  @media (max-width:600px){#scene{min-width:700px} td.n{white-space:normal} th,td{padding:6px 5px} .prow{grid-template-columns:minmax(0,1fr) 92px}}
+  .card{background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h2{font-size:15px;margin:0 0 10px;font-weight:700}
+  .stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+  svg{display:block;width:100%;height:auto}
+  .st rect{fill:var(--bg-2);stroke:var(--line);stroke-width:1.5;transition:stroke .2s,fill .2s}
+  .st.active rect{stroke:var(--red);stroke-width:2.5;fill:#6b6c73}
+  .st.visited rect{stroke:var(--ok)}
+  .st text{fill:var(--text-0);font-size:16px;font-family:var(--sans);text-anchor:middle}
+  .st text.s{fill:var(--text-2);font-size:12.5px}
+  #wafer{transition:transform .6s ease}
+  @media (prefers-reduced-motion:reduce){#wafer{transition:none}}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:4px 10px;border-radius:20px;border:1px solid var(--line);color:var(--text-2);font-size:12px}
+  .chip.cur{border-color:var(--red);color:var(--text-0);background:rgba(228,52,43,.18)}
+  .chip.done{border-color:var(--ok);color:var(--ok)}
+  .meta{color:var(--text-1);font-size:12.5px;margin:0 0 10px}
+  .why{margin:0 0 12px;color:var(--text-1);font-size:13px}
+  .hazard{display:flex;gap:8px;padding:8px 12px;border-radius:9px;border:1px solid var(--warn);background:rgba(217,164,65,.14);color:var(--text-0);font-size:12.5px;margin:0 0 12px}
+  .actions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .act{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg-0)}
+  .act .lbl{flex:1;min-width:0}
+  .act .tag{font-size:11px;color:var(--gold);border:1px solid var(--gold);border-radius:20px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+  .act.done{border-color:var(--ok);opacity:.85}
+  .act.next{border-color:var(--teal);box-shadow:0 0 0 2px rgba(47,227,201,.25)}
+  .act button{min-width:88px;padding:6px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg-1);color:var(--text-0);font:inherit;font-weight:600;cursor:pointer}
+  .act button:hover:not(:disabled){background:var(--bg-2)}
+  .act button:disabled{opacity:.4;cursor:not-allowed}
+  .act.done button{border-color:var(--ok);color:var(--ok)}
+  .params{margin:6px 0 4px;padding:10px;border:1px dashed var(--line);border-radius:9px}
+  .prow{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:4px 10px;align-items:center;padding:4px 0}
+  .prow label{color:var(--text-0);font-size:13px}
+  .prow input{width:100%;background:var(--bg-2);border:1px solid var(--line);color:var(--text-0);border-radius:7px;padding:6px 8px;font-family:var(--mono);font-size:13px}
+  .prow .hint{grid-column:1 / -1;font-size:11.5px;color:var(--text-2)}
+  .g1{color:var(--ok)} .g5{color:var(--warn)} .g0{color:var(--bad)}
+  #msg{min-height:20px;margin:10px 0 0;font-size:12.5px}
+  #msg.bad{color:var(--bad)} #msg.ok{color:var(--ok)}
+  .next-row{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+  .decide{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px}
+  .meas{margin:10px 0 0;font-family:var(--mono);font-size:12.5px;color:var(--text-0)}
+  .log{max-height:180px;overflow:auto;font-size:12px;color:var(--text-1);display:flex;flex-direction:column;gap:3px}
+  .log div.bad{color:var(--bad)} .log div.ok{color:var(--ok)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--text-2);font-weight:600}
+  td.n{font-family:var(--mono);white-space:nowrap}
+  .score{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+  @media (max-width:600px){.score{grid-template-columns:repeat(2,1fr)}}
+  .sbox{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg-0)}
+  .sbox .v{font-size:22px;font-weight:800;font-family:var(--mono)}
+  .sbox .k{font-size:12px;color:var(--text-2)}
+  .grade{font-weight:700}
+  .empty{color:var(--text-2);font-size:13px}
+  dialog{background:var(--bg-1);color:var(--text-0);border:1px solid var(--line);border-radius:12px;max-width:560px;width:92%}
+  dialog::backdrop{background:rgba(0,0,0,.55)}
+  footer{margin-top:28px;color:var(--text-2);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Wafer fab SOP trainer</h1>
+    <div class="sub">Perform one fabrication process step by step. Sequence, settings and safety checks are scored against the loaded recipe.</div>
+  </div>
+  <div class="tools">
+    <label for="proc" class="empty" style="margin-right:-2px">Process</label>
+    <select id="proc" class="btn" aria-label="Process"></select>
+    <label for="wo" class="empty" style="margin-right:-2px">Work order</label>
+    <select id="wo" class="btn" aria-label="Work order"></select>
+    <div class="seg" role="group" aria-label="Training mode">
+      <button type="button" data-mode="guided" aria-pressed="true">Guided</button>
+      <button type="button" data-mode="practice" aria-pressed="false">Practice</button>
+      <button type="button" data-mode="assessment" aria-pressed="false">Assessment</button>
+    </div>
+    <button class="btn" id="btnRecipe" type="button">Recipe data</button>
+    <button class="btn" id="btnReset" type="button">Restart</button>
+  </div>
+</header>
+
+<div class="notice" id="recipeNotice"></div>
+
+<div class="layout">
+  <div class="stack">
+    <section class="card" aria-label="Process bay">
+      <h2>Process bay</h2>
+      <div class="scrollx" id="sceneWrap"><svg id="scene" viewBox="0 0 840 158" role="img" aria-label="Wafer path through the process bay stations"></svg></div>
+    </section>
+    <section class="card" aria-label="Wafer cross-section">
+      <h2>Wafer cross-section</h2>
+      <svg id="xsec" viewBox="0 0 420 170" role="img" aria-label="Cross-section of the wafer showing process state"></svg>
+      <div class="meas" id="meas"></div>
+    </section>
+    <section class="card" aria-label="Top view" id="topCard">
+      <h2>Top view</h2>
+      <svg id="topview" viewBox="0 0 420 200" role="img" aria-label="Top view of the wafer or package"></svg>
+    </section>
+    <section class="card" aria-label="Session log">
+      <h2>Session log</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="card" id="woCard" aria-label="Work order" hidden></section>
+    <section class="card">
+      <div class="chips" id="chips" aria-label="Procedure steps"></div>
+    </section>
+    <section class="card" id="stepCard" aria-live="polite"></section>
+    <section class="card" id="reportCard" hidden></section>
+  </div>
+</div>
+
+<footer>
+  The step engine is separate from the screen drawing, so the same recipe and scoring can later drive a WebXR or headset front end.
+  Process results use a simplified training model, not a lab-calibrated simulation.
+</footer>
+</div>
+
+<dialog id="dlg">
+  <h2 style="margin-top:0;font-size:16px">Recipe data</h2>
+  <p class="empty" id="dlgInfo"></p>
+  <p style="font-size:13px;color:var(--text-1)">Load a recipe file to replace the standard data with equipment settings from a partner lab. Export the current recipe to see the file format.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+    <button class="btn" type="button" id="btnExport">Export current recipe</button>
+    <label class="btn" style="cursor:pointer">Load recipe file<input type="file" id="fileIn" accept="application/json,.json" hidden></label>
+    <button class="btn" type="button" id="btnDefault">Restore standard data</button>
+  </div>
+  <div id="dlgMsg" style="font-size:12.5px;min-height:18px"></div>
+  <div style="text-align:right;margin-top:8px"><button class="btn primary" type="button" id="dlgClose">Close</button></div>
+</dialog>
+
+<script>
+/* ------------------------------------------------------------------
+   RECIPE LIBRARY (standard reference data). Swap a recipe by loading a JSON
+   file with the same shape through "Recipe data".
+   meta.short   : name in the Process menu
+   meta.source  : where the numbers come from
+   weights      : score weights (sum 100)
+   model.type   : litho | etch | implant | cvd | metal (selects outcome model and drawing)
+   stations[]   : id, label, sub
+   steps[]      : id, title, station, why, hazard?, final?, params?[], actions[]
+   params[]     : id, label, unit, nominal, tol, min, max, step
+   actions[]    : id, label, type? ('set' commits the step's params; 'measure' reveals results), safety?
+------------------------------------------------------------------- */
+const W_STD = {order:40, settings:40, safety:20};
+const LIB = {};
+
+LIB.litho = {
+  meta:{short:"Lithography", name:"Positive-resist i-line lithography, 150 mm silicon wafer",
+        source:"Standard reference data (textbook-typical values)",
+        note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"litho", thickness_target_um:1.0, thickness_tol_um:0.05, cd_target_um:1.0, cd_tol_frac:0.10},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"Cleanroom entry"},{id:"prime",label:"Prime",sub:"HMDS oven"},
+    {id:"coat",label:"Coater",sub:"Spin coat"},{id:"bake",label:"Hotplate",sub:"Bake / cool"},
+    {id:"expose",label:"Stepper",sub:"UV exposure"},{id:"develop",label:"Developer",sub:"Wet bench"},
+    {id:"inspect",label:"Microscope",sub:"Inspection"}
+  ],
+  steps:[
+    {id:"ppe", title:"Enter the lithography bay", station:"gown",
+     why:"The bay uses UV-filtered yellow light and strict particle control. Gowning comes first because everything you touch afterwards can carry contamination.",
+     actions:[
+       {id:"coverall",label:"Put on cleanroom coverall, hood and shoe covers",safety:true},
+       {id:"gloves",label:"Put on gloves and safety glasses",safety:true},
+       {id:"yellow",label:"Confirm yellow-room lighting is on in the bay"}]},
+    {id:"prime", title:"Load and prime the wafer", station:"prime",
+     why:"Resist sticks poorly to a wet surface. A dehydration bake and HMDS vapour make the silicon surface water-repellent so the resist adheres.",
+     hazard:"HMDS vapour is flammable and irritating. Run the oven only with exhaust on.",
+     params:[
+       {id:"prime_temp",label:"Dehydration and prime temperature",unit:"°C",nominal:120,tol:10,min:60,max:200,step:1},
+       {id:"prime_s",label:"Prime time",unit:"s",nominal:60,tol:15,min:10,max:300,step:1}],
+     actions:[
+       {id:"inspect",label:"Inspect the wafer: clean, dry, notch visible, no damage"},
+       {id:"exhaust",label:"Check that the HMDS oven exhaust is on",safety:true},
+       {id:"load",label:"Load the wafer into the oven with tweezers"},
+       {id:"set",label:"Set prime recipe",type:"set"},
+       {id:"run",label:"Run the prime cycle"}]},
+    {id:"coat", title:"Spin-coat photoresist", station:"coat",
+     why:"Thickness falls as spin speed rises, roughly with the inverse square root of speed. Too little resist or too short a spin leaves streaks and uneven film.",
+     hazard:"Resist solvents are flammable. Keep the coater exhaust on and the bowl clean.",
+     params:[
+       {id:"dispense_ml",label:"Dispense volume",unit:"mL",nominal:3,tol:1,min:0,max:10,step:0.5},
+       {id:"spread_rpm",label:"Spread speed",unit:"rpm",nominal:500,tol:150,min:0,max:2000,step:50},
+       {id:"spin_rpm",label:"Spin speed",unit:"rpm",nominal:4000,tol:300,min:500,max:8000,step:50},
+       {id:"spin_s",label:"Spin time",unit:"s",nominal:30,tol:5,min:5,max:120,step:1}],
+     actions:[
+       {id:"bottle",label:"Check resist bottle: type, expiry date and lot"},
+       {id:"exhaust",label:"Verify coater exhaust is on and the bowl is clean",safety:true},
+       {id:"chuck",label:"Centre the wafer on the chuck and switch on vacuum"},
+       {id:"set",label:"Set coat recipe",type:"set"},
+       {id:"disp",label:"Dispense resist at the wafer centre"},
+       {id:"spin",label:"Run the spin cycle"},
+       {id:"remove",label:"Release vacuum and remove the wafer with tweezers"}]},
+    {id:"sb", title:"Soft bake", station:"bake",
+     why:"The soft bake drives solvent out of the resist. Too cool leaves solvent in; too hot starts to decompose the light-sensitive compound and makes the resist less sensitive.",
+     hazard:"The hotplate surface is hot. Handle wafers with tweezers only.",
+     params:[
+       {id:"sb_temp",label:"Soft-bake temperature",unit:"°C",nominal:100,tol:5,min:50,max:200,step:1},
+       {id:"sb_s",label:"Soft-bake time",unit:"s",nominal:60,tol:10,min:10,max:300,step:1}],
+     actions:[
+       {id:"set",label:"Set soft-bake recipe",type:"set"},
+       {id:"stable",label:"Wait until the hotplate reaches the set temperature"},
+       {id:"place",label:"Place the wafer on the hotplate with tweezers",safety:true},
+       {id:"timer",label:"Start the bake timer"},
+       {id:"remove",label:"Remove the wafer when the timer ends"},
+       {id:"cool",label:"Cool the wafer on the cool plate"}]},
+    {id:"expose", title:"Align and expose", station:"expose",
+     why:"Dose sets how much of the resist changes. More dose widens the opening in positive resist. Focus sets how sharp the edge is; an out-of-focus image gives sloped sidewalls.",
+     hazard:"UV light damages eyes and skin. The stepper door interlock must be closed before exposure.",
+     params:[
+       {id:"dose",label:"Exposure dose",unit:"mJ/cm²",nominal:150,tol:15,min:0,max:400,step:5},
+       {id:"focus",label:"Focus offset",unit:"µm",nominal:0,tol:0.3,min:-2,max:2,step:0.1}],
+     actions:[
+       {id:"interlock",label:"Check the door interlock and that the UV shutter is closed",safety:true},
+       {id:"mask",label:"Load the mask and verify the pattern ID"},
+       {id:"align",label:"Load the wafer and run alignment on the notch and marks"},
+       {id:"set",label:"Set exposure recipe",type:"set"},
+       {id:"expose",label:"Expose the wafer"},
+       {id:"unload",label:"Unload the wafer"}]},
+    {id:"peb", title:"Post-exposure bake", station:"bake",
+     why:"A short bake after exposure smooths the interference ripples in the resist and sharpens the pattern edge.",
+     hazard:"The hotplate surface is hot. Handle wafers with tweezers only.",
+     params:[
+       {id:"peb_temp",label:"Post-exposure bake temperature",unit:"°C",nominal:110,tol:5,min:50,max:200,step:1},
+       {id:"peb_s",label:"Post-exposure bake time",unit:"s",nominal:60,tol:10,min:10,max:300,step:1}],
+     actions:[
+       {id:"set",label:"Set post-exposure bake recipe",type:"set"},
+       {id:"place",label:"Place the wafer on the hotplate with tweezers",safety:true},
+       {id:"timer",label:"Start the bake timer"},
+       {id:"remove",label:"Remove the wafer and cool it on the cool plate"}]},
+    {id:"dev", title:"Develop", station:"develop",
+     why:"The developer dissolves the exposed resist. Develop time trades off residue (too short) against widened openings and resist loss (too long).",
+     hazard:"The developer is a corrosive alkaline solution. Wear apron, gloves and goggles.",
+     params:[
+       {id:"dev_s",label:"Develop time",unit:"s",nominal:60,tol:10,min:5,max:300,step:1},
+       {id:"rinse_s",label:"DI water rinse time",unit:"s",nominal:30,tol:10,min:5,max:120,step:1}],
+     actions:[
+       {id:"apron",label:"Put on chemical apron and goggles",safety:true},
+       {id:"bath",label:"Check developer type, expiry date and bath level"},
+       {id:"set",label:"Set develop recipe",type:"set"},
+       {id:"develop",label:"Load the wafer and start the develop cycle"},
+       {id:"rinse",label:"Rinse the wafer with DI water"},
+       {id:"dry",label:"Dry the wafer with nitrogen"},
+       {id:"waste",label:"Dispose of waste in the labelled container",safety:true}]},
+    {id:"hb", title:"Hard bake", station:"bake",
+     why:"The hard bake toughens the pattern for the next process. Too hot makes the resist flow and round off the edges.",
+     hazard:"The hotplate surface is hot. Handle wafers with tweezers only.",
+     params:[
+       {id:"hb_temp",label:"Hard-bake temperature",unit:"°C",nominal:120,tol:10,min:50,max:220,step:1},
+       {id:"hb_s",label:"Hard-bake time",unit:"s",nominal:120,tol:30,min:10,max:600,step:1}],
+     actions:[
+       {id:"set",label:"Set hard-bake recipe",type:"set"},
+       {id:"place",label:"Place the wafer on the hotplate with tweezers",safety:true},
+       {id:"timer",label:"Start the bake timer"},
+       {id:"remove",label:"Remove the wafer and let it cool"}]},
+    {id:"insp", title:"Inspect and decide", station:"inspect", final:true,
+     why:"Inspection decides whether the wafer moves on or is reworked. Check coverage, particles and linewidth against the specification before you release it.",
+     actions:[
+       {id:"scope",label:"Inspect under the microscope: coverage, edge bead, particles"},
+       {id:"measure",label:"Measure film thickness and linewidth (critical dimension)",type:"measure"}]}
+  ]
+};
+
+LIB.etch = {
+  meta:{short:"Etching (oxide RIE)", name:"Dry etch of silicon dioxide (reactive ion etch, fluorine plasma), resist mask, 150 mm wafer",
+        source:"Standard reference data (textbook-typical values)",
+        note:"Film: {film_nm} nm oxide under a 1 µm resist mask. Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"etch", film_nm:500},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"Cleanroom entry"},{id:"load",label:"Load lock",sub:"Vent / pump"},
+    {id:"etch",label:"Etcher",sub:"RIE chamber"},{id:"strip",label:"Resist strip",sub:"Ash / clean"},
+    {id:"inspect",label:"Microscope",sub:"Inspection"}
+  ],
+  steps:[
+    {id:"ppe", title:"Enter the etch bay", station:"gown",
+     why:"Etch tools use toxic gases and high voltage. Gowning and a status check come before you touch anything.",
+     actions:[
+       {id:"coverall",label:"Put on cleanroom coverall, hood and shoe covers",safety:true},
+       {id:"gloves",label:"Put on gloves and safety glasses",safety:true},
+       {id:"board",label:"Confirm the tool status board shows ready and no alarms"}]},
+    {id:"check", title:"Check the wafer and the tool", station:"load",
+     why:"Etching cannot be undone. Confirm the wafer, the film thickness and the chamber condition before anything goes into the tool.",
+     hazard:"Etch gases and their by-products are toxic and corrosive. Exhaust and gas cabinet alarms must be clear.",
+     actions:[
+       {id:"wafer",label:"Inspect the patterned wafer: resist pattern complete, no residue"},
+       {id:"sheet",label:"Read the run sheet: film, thickness {film_nm} nm, recipe name"},
+       {id:"alarms",label:"Verify exhaust and gas cabinet alarms are clear",safety:true},
+       {id:"season",label:"Check the chamber clean and conditioning run is logged"}]},
+    {id:"load", title:"Load the wafer", station:"load",
+     why:"The load lock keeps the chamber under vacuum. Always follow the vent, load, pump, transfer order.",
+     hazard:"Do not bypass load-lock interlocks. Vacuum parts and moving arms can trap fingers.",
+     actions:[
+       {id:"vent",label:"Vent the load lock"},
+       {id:"place",label:"Place the wafer on the carrier with tweezers, notch to the marker"},
+       {id:"pump",label:"Close the load lock and pump down"},
+       {id:"transfer",label:"Transfer the wafer into the etch chamber"}]},
+    {id:"etch", title:"Set the recipe and etch", station:"etch",
+     why:"At standard settings the oxide etches at about 100 nm/min. Etch time is the film thickness divided by the rate, plus about 10 % over-etch. Too short leaves oxide in the openings; too long attacks the silicon below. Higher pressure makes the walls less vertical; higher power lowers selectivity to resist.",
+     hazard:"RF plasma and high voltage. The chamber door interlock must be closed before plasma on.",
+     params:[
+       {id:"rf_power",label:"RF power",unit:"W",nominal:150,tol:20,min:20,max:400,step:5},
+       {id:"pressure",label:"Chamber pressure",unit:"mTorr",nominal:50,tol:10,min:5,max:200,step:1},
+       {id:"gas_flow",label:"CF₄ gas flow",unit:"sccm",nominal:40,tol:5,min:5,max:100,step:1},
+       {id:"etch_s",label:"Etch time",unit:"s",nominal:330,tol:30,min:30,max:900,step:5}],
+     actions:[
+       {id:"recipe",label:"Select the oxide etch recipe"},
+       {id:"set",label:"Set etch recipe",type:"set"},
+       {id:"interlock",label:"Confirm the chamber door interlock is closed",safety:true},
+       {id:"start",label:"Start the etch (plasma on)"},
+       {id:"endpoint",label:"Watch the endpoint and reflected-power signals"},
+       {id:"off",label:"Confirm plasma off at the end of the timer"}]},
+    {id:"strip", title:"Unload and strip the resist", station:"strip",
+     why:"The resist has done its job. It is removed by oxygen plasma, then the wafer is rinsed and dried.",
+     hazard:"Solvent rinses give off flammable vapour. Work in the fume hood with gloves.",
+     actions:[
+       {id:"unload",label:"Unload the wafer through the load lock"},
+       {id:"ash",label:"Strip the resist in the oxygen plasma asher"},
+       {id:"rinse",label:"Rinse the wafer in the fume hood, wearing gloves",safety:true},
+       {id:"dry",label:"Dry the wafer with nitrogen"}]},
+    {id:"insp", title:"Inspect and decide", station:"inspect", final:true,
+     why:"Check that the oxide is cleared in the openings, the walls are steep, and the silicon below is not attacked.",
+     actions:[
+       {id:"scope",label:"Inspect under the microscope: pattern fidelity and residue"},
+       {id:"measure",label:"Measure etch depth, sidewall angle and silicon loss",type:"measure"}]}
+  ]
+};
+
+LIB.implant = {
+  meta:{short:"Ion implantation + anneal", name:"Arsenic n+ source/drain implant and rapid thermal anneal, 150 mm wafer",
+        source:"Standard reference data (textbook-typical values)",
+        note:"Target dose {dose}×10¹⁵ ions/cm² with a fixed {beam} mA beam on a 150 mm wafer (area about 177 cm²). Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"implant", dose_target:1.0, beam_ma:1.0, area_cm2:176.7},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"Cleanroom entry"},{id:"load",label:"Load lock",sub:"Vent / pump"},
+    {id:"implant",label:"Implanter",sub:"Ion beam"},{id:"anneal",label:"RTA",sub:"Rapid anneal"},
+    {id:"inspect",label:"4-pt probe",sub:"Sheet resistance"}
+  ],
+  steps:[
+    {id:"ppe", title:"Enter the implant bay", station:"gown",
+     why:"The implanter uses toxic dopant gases and high voltage. Gowning and a status check come first.",
+     actions:[
+       {id:"coverall",label:"Put on cleanroom coverall, hood and shoe covers",safety:true},
+       {id:"gloves",label:"Put on gloves and safety glasses",safety:true},
+       {id:"board",label:"Confirm the implanter status board shows ready and no alarms"}]},
+    {id:"check", title:"Check the wafer and the implanter", station:"load",
+     why:"An implant cannot be removed. Confirm the dopant, energy and target dose on the run sheet before loading.",
+     hazard:"Dopant gases (arsine, phosphine, BF₃) are highly toxic. If a gas alarm sounds, leave the area and call for help. The implanter uses high voltage and produces X-rays: keep panels closed.",
+     actions:[
+       {id:"wafer",label:"Inspect the wafer: screen oxide and resist mask intact"},
+       {id:"sheet",label:"Read the run sheet: arsenic, {energy} keV, target {dose}×10¹⁵ ions/cm², beam {beam} mA"},
+       {id:"gas",label:"Verify the gas cabinet alarms are clear",safety:true},
+       {id:"hv",label:"Confirm the panels and high-voltage interlocks are closed",safety:true}]},
+    {id:"load", title:"Load the wafer", station:"load",
+     why:"The load lock keeps the beam line under vacuum. Follow the vent, load, pump, transfer order.",
+     hazard:"Do not bypass load-lock interlocks. Moving arms can trap fingers.",
+     actions:[
+       {id:"vent",label:"Vent the load lock"},
+       {id:"place",label:"Place the wafer on the carrier with tweezers, notch to the marker"},
+       {id:"pump",label:"Close the load lock and pump down"},
+       {id:"transfer",label:"Transfer the wafer to the implant stage"}]},
+    {id:"implant", title:"Set the recipe and implant", station:"implant",
+     why:"Energy sets how deep the ions go; tilt avoids channeling along crystal lanes; time sets the dose. With a fixed beam current the dose follows Q = I·t / (q·A). Calculate the time from the dose, the wafer area (about 177 cm²) and the beam current on the run sheet.",
+     hazard:"High voltage and X-rays. Do not open any panel during an implant.",
+     params:[
+       {id:"energy",label:"Implant energy",unit:"keV",nominal:50,tol:5,min:10,max:200,step:1},
+       {id:"tilt",label:"Wafer tilt",unit:"°",nominal:7,tol:2,min:0,max:15,step:0.5},
+       {id:"implant_s",label:"Implant time (calculate from the target dose)",unit:"s",nominal:28,tol:4,min:1,max:300,step:1}],
+     actions:[
+       {id:"set",label:"Set implant recipe",type:"set"},
+       {id:"cup",label:"Check that the Faraday cup reads the {beam} mA beam current"},
+       {id:"start",label:"Start the implant"},
+       {id:"counter",label:"Confirm the dose counter reaches the target and the beam stops"},
+       {id:"unload",label:"Unload the wafer"}]},
+    {id:"anneal", title:"Strip, clean and anneal", station:"anneal",
+     why:"The implant damages the crystal and leaves dopants in the wrong sites. A short, hot anneal repairs the lattice and activates the dopants, but too much heat spreads them deeper.",
+     hazard:"The anneal chamber and lamps are very hot. Let the wafer cool before unloading.",
+     params:[
+       {id:"rta_temp",label:"Anneal temperature",unit:"°C",nominal:1000,tol:25,min:600,max:1200,step:5},
+       {id:"rta_s",label:"Anneal time",unit:"s",nominal:10,tol:3,min:1,max:60,step:1}],
+     actions:[
+       {id:"strip",label:"Strip the resist and clean the wafer"},
+       {id:"set",label:"Set anneal recipe",type:"set"},
+       {id:"load",label:"Load the wafer into the anneal chamber"},
+       {id:"run",label:"Run the anneal"},
+       {id:"cool",label:"Let the wafer cool, then unload it with tweezers",safety:true}]},
+    {id:"insp", title:"Measure and decide", station:"inspect", final:true,
+     why:"Sheet resistance tells you how many dopants are active; junction depth tells you how far they spread. Both must meet the specification.",
+     actions:[
+       {id:"probe",label:"Place the wafer on the four-point probe stage"},
+       {id:"measure",label:"Measure sheet resistance and estimate junction depth",type:"measure"}]}
+  ]
+};
+
+LIB.cvd = {
+  meta:{short:"Deposition (PECVD oxide)", name:"Plasma-enhanced CVD of silicon dioxide, {target_nm} nm, 150 mm wafer",
+        source:"Standard reference data (textbook-typical values)",
+        note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"cvd", target_nm:500},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"Cleanroom entry"},{id:"load",label:"Load lock",sub:"Vent / pump"},
+    {id:"cvd",label:"PECVD",sub:"Deposition chamber"},{id:"cool",label:"Cool station",sub:"Unload"},
+    {id:"inspect",label:"Metrology",sub:"Film measurement"}
+  ],
+  steps:[
+    {id:"ppe", title:"Enter the deposition bay", station:"gown",
+     why:"PECVD uses silane, which is pyrophoric and toxic. Gowning and a status check come first.",
+     actions:[
+       {id:"coverall",label:"Put on cleanroom coverall, hood and shoe covers",safety:true},
+       {id:"gloves",label:"Put on gloves and safety glasses",safety:true},
+       {id:"board",label:"Confirm the tool status board shows ready and no alarms"}]},
+    {id:"check", title:"Check the chamber and the gases", station:"load",
+     why:"A dirty chamber sheds particles into the film. Check the clean log and the gas safety systems before loading.",
+     hazard:"Silane ignites on contact with air and is toxic. Never open a silane line. Gas cabinet alarms and the exhaust scrubber must be clear.",
+     actions:[
+       {id:"clean",label:"Check the chamber clean and seasoning run is logged"},
+       {id:"gas",label:"Verify gas cabinet alarms are clear and the scrubber is running",safety:true},
+       {id:"sheet",label:"Read the run sheet: film, target thickness {target_nm} nm, lot"}]},
+    {id:"load", title:"Load the wafer", station:"load",
+     why:"Follow the vent, load, pump, transfer order. Never bypass the load-lock interlocks.",
+     hazard:"Moving arms and vacuum parts can trap fingers.",
+     actions:[
+       {id:"vent",label:"Vent the load lock"},
+       {id:"place",label:"Place the wafer on the carrier with tweezers, notch to the marker"},
+       {id:"pump",label:"Close the load lock and pump down"},
+       {id:"transfer",label:"Transfer the wafer into the deposition chamber"}]},
+    {id:"dep", title:"Set the recipe and deposit", station:"cvd",
+     why:"At standard settings the oxide grows at about 200 nm/min, so time is the target thickness divided by the rate. Pressure and power set uniformity; silane flow sets the film composition and so its refractive index; low temperature gives a porous film.",
+     hazard:"RF plasma, high voltage and silane. The chamber door interlock must be closed before plasma on.",
+     params:[
+       {id:"dep_temp",label:"Deposition temperature",unit:"°C",nominal:350,tol:25,min:150,max:450,step:5},
+       {id:"pressure",label:"Chamber pressure",unit:"Torr",nominal:1.0,tol:0.2,min:0.2,max:3,step:0.1},
+       {id:"rf_power",label:"RF power",unit:"W",nominal:200,tol:25,min:50,max:500,step:5},
+       {id:"sih4",label:"SiH₄ flow",unit:"sccm",nominal:50,tol:5,min:10,max:150,step:1},
+       {id:"dep_s",label:"Deposition time",unit:"s",nominal:150,tol:10,min:10,max:600,step:5}],
+     actions:[
+       {id:"recipe",label:"Select the oxide deposition recipe"},
+       {id:"set",label:"Set deposition recipe",type:"set"},
+       {id:"interlock",label:"Confirm the chamber door interlock is closed",safety:true},
+       {id:"stable",label:"Wait for temperature and pressure to stabilise"},
+       {id:"start",label:"Start the deposition (plasma on)"},
+       {id:"off",label:"Confirm plasma off at the end of the timer"},
+       {id:"purge",label:"Purge the chamber with nitrogen"}]},
+    {id:"unload", title:"Unload and cool", station:"cool",
+     why:"The wafer and carrier come out hot. Let them cool before any further handling.",
+     hazard:"The wafer and carrier are hot. Use tweezers and the cool station.",
+     actions:[
+       {id:"transfer",label:"Transfer the wafer back to the load lock"},
+       {id:"vent",label:"Vent the load lock"},
+       {id:"remove",label:"Remove the wafer with tweezers",safety:true},
+       {id:"cool",label:"Cool the wafer on the cool station"}]},
+    {id:"insp", title:"Measure and decide", station:"inspect", final:true,
+     why:"Thickness, uniformity and refractive index together describe a good oxide film. Check each against the specification.",
+     actions:[
+       {id:"look",label:"Inspect the film under bright light: colour uniformity and particles"},
+       {id:"measure",label:"Measure thickness, uniformity and refractive index",type:"measure"}]}
+  ]
+};
+
+LIB.metal = {
+  meta:{short:"Metallisation (Al sputter)", name:"DC magnetron sputtering of aluminium, {target_nm} nm, on a 150 mm wafer that already carries its Ti/TiN barrier",
+        source:"Standard reference data (textbook-typical values)",
+        note:"Replace with equipment settings from the partner lab when available.", version:"0.2"},
+  weights:W_STD,
+  model:{type:"metal", target_nm:1000},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"Cleanroom entry"},{id:"load",label:"Load lock",sub:"Vent / pump"},
+    {id:"sputter",label:"Sputter",sub:"PVD chamber"},{id:"cool",label:"Cool station",sub:"Unload"},
+    {id:"inspect",label:"4-pt probe",sub:"Film measurement"}
+  ],
+  steps:[
+    {id:"ppe", title:"Enter the metallisation bay", station:"gown",
+     why:"Sputter tools use high voltage, strong magnets and cooling water. Gowning and a status check come first.",
+     actions:[
+       {id:"coverall",label:"Put on cleanroom coverall, hood and shoe covers",safety:true},
+       {id:"gloves",label:"Put on gloves and safety glasses",safety:true},
+       {id:"board",label:"Confirm the tool status board shows ready and no alarms"}]},
+    {id:"check", title:"Check the target, vacuum and cooling", station:"load",
+     why:"A worn target, a poor vacuum or a water leak ruins the film or the tool. Check them before loading.",
+     hazard:"The sputter source uses high voltage and strong magnets, and is water cooled. Keep hands and tools clear of the source.",
+     actions:[
+       {id:"target",label:"Check the aluminium target ID and remaining lifetime"},
+       {id:"base",label:"Check base pressure is below 5×10⁻⁷ Torr"},
+       {id:"water",label:"Verify cooling water flow and argon supply"},
+       {id:"shield",label:"Confirm the shields and interlocks are closed",safety:true}]},
+    {id:"load", title:"Load the wafer", station:"load",
+     why:"Follow the vent, load, pump, transfer order. Never bypass the load-lock interlocks.",
+     hazard:"Moving arms and vacuum parts can trap fingers.",
+     actions:[
+       {id:"vent",label:"Vent the load lock"},
+       {id:"place",label:"Place the wafer on the carrier with tweezers, notch to the marker"},
+       {id:"pump",label:"Close the load lock and pump down"},
+       {id:"transfer",label:"Transfer the wafer into the sputter chamber"}]},
+    {id:"dep", title:"Set the recipe and sputter", station:"sputter",
+     why:"The Ti/TiN barrier is already on the wafer from an earlier step; this recipe covers the aluminium step only. At standard settings aluminium deposits at about 600 nm/min, so time is the target thickness divided by the rate. Pressure and temperature change the film resistivity. Two different clean steps come before deposition. The wafer pre-clean is an argon sputter etch with the wafer exposed and the substrate biased: it removes native oxide so the metal bonds to the surface underneath. The target pre-sputter runs with the shutter closed: it cleans the target, not the wafer. Too hot a substrate grows hillocks.",
+     hazard:"High voltage on the sputter source, RF bias on the substrate, hot substrate heater. Door interlock must be closed before plasma on.",
+     params:[
+       {id:"clean_s",label:"Wafer pre-clean time (Ar sputter etch)",unit:"s",nominal:30,tol:10,min:0,max:120,step:1},
+       {id:"tgt_s",label:"Target pre-sputter time (shutter closed)",unit:"s",nominal:30,tol:10,min:0,max:120,step:1},
+       {id:"ar_flow",label:"Argon flow",unit:"sccm",nominal:30,tol:5,min:5,max:100,step:1},
+       {id:"pressure",label:"Process pressure",unit:"mTorr",nominal:3,tol:1,min:0.5,max:20,step:0.5},
+       {id:"dc_kw",label:"DC power",unit:"kW",nominal:5,tol:0.5,min:0.5,max:12,step:0.1},
+       {id:"sub_temp",label:"Substrate temperature",unit:"°C",nominal:200,tol:25,min:25,max:450,step:5},
+       {id:"dep_s",label:"Deposition time",unit:"s",nominal:100,tol:5,min:10,max:400,step:1}],
+     actions:[
+       {id:"recipe",label:"Select the aluminium sputter recipe"},
+       {id:"set",label:"Set sputter recipe",type:"set"},
+       {id:"interlock",label:"Confirm the chamber door interlock is closed",safety:true},
+       {id:"heat",label:"Heat the wafer to the set substrate temperature"},
+       {id:"clean",label:"Run the wafer pre-clean: argon sputter etch with the shutter open and the substrate biased"},
+       {id:"tpre",label:"Close the shutter and run the target pre-sputter"},
+       {id:"depo",label:"Open the shutter and deposit (plasma on)"},
+       {id:"off",label:"Confirm plasma off and close the shutter"}]},
+    {id:"unload", title:"Unload and cool", station:"cool",
+     why:"The wafer comes out hot. Let it cool before any further handling.",
+     hazard:"The wafer and carrier are hot. Use tweezers and the cool station.",
+     actions:[
+       {id:"transfer",label:"Transfer the wafer back to the load lock"},
+       {id:"vent",label:"Vent the load lock"},
+       {id:"remove",label:"Remove the wafer with tweezers",safety:true},
+       {id:"cool",label:"Cool the wafer on the cool station"}]},
+    {id:"insp", title:"Measure and decide", station:"inspect", final:true,
+     why:"Thickness, sheet resistance, uniformity and contact resistance together describe a good metal film. Sheet resistance describes the film itself; contact resistance describes the interface under it. Check each against the specification.",
+     actions:[
+       {id:"look",label:"Inspect the surface: colour, haze, particles"},
+       {id:"measure",label:"Measure thickness, sheet resistance and uniformity, then test contact resistance",type:"measure"}]}
+  ]
+};
+
+/* ====== back-end recipes (assembly and test), standard reference data ====== */
+const ESD_ACTIONS=[
+  {id:"smock",label:"Put on the ESD smock, gloves and safety glasses",safety:true},
+  {id:"strap",label:"Put on the wrist strap and test it at the checker",safety:true},
+  {id:"mat",label:"Confirm the bench ESD mat is grounded"}];
+
+LIB.diebond = {
+  meta:{short:"Die bonding (epoxy)", group:"back", name:"Epoxy die attach of a {die_mm} × {die_mm} mm die on a copper lead frame, with oven cure",
+        source:"Standard reference data (textbook-typical values)", note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"diebond"},
+  stations:[
+    {id:"esd",label:"ESD prep",sub:"Bench entry"},{id:"prep",label:"Materials",sub:"Epoxy / frames"},
+    {id:"bond",label:"Die bonder",sub:"Dispense / place"},{id:"cure",label:"Cure oven",sub:"Heat cure"},
+    {id:"inspect",label:"Microscope",sub:"Inspection"}],
+  steps:[
+    {id:"ppe",title:"Prepare the ESD bench",station:"esd",
+     why:"Bare die are damaged by static electricity you cannot feel. Ground yourself and the bench before you touch a die or a lead frame.",
+     actions:ESD_ACTIONS},
+    {id:"check",title:"Check the materials",station:"prep",
+     why:"Epoxy is stored frozen and has a limited working life once thawed. Check it, the lead frame and the die before you start.",
+     hazard:"Epoxy resin and solvent vapours irritate skin and eyes. Use gloves and local exhaust.",
+     actions:[
+       {id:"epoxy",label:"Check the epoxy lot, expiry and thaw time on the syringe label"},
+       {id:"exhaust",label:"Verify local exhaust is on at the bench",safety:true},
+       {id:"frame",label:"Inspect the lead frame: clean, flat, pad free of oxidation"},
+       {id:"ring",label:"Inspect the diced wafer ring: die present, none cracked"}]},
+    {id:"bond",title:"Dispense epoxy and place the die",station:"bond",
+     why:"Epoxy volume sets the bond-line thickness, and bond force presses out air. Too little force traps voids; too much cracks the die. Both volume and force scale with die area.",
+     hazard:"The collet vacuum and heater block can pinch or burn. Keep fingers clear of the stage while it moves.",
+     params:[
+       {id:"dispense_ms",label:"Epoxy dispense time",unit:"ms",nominal:120,tol:20,min:10,max:600,step:5},
+       {id:"bond_force",label:"Bond force",unit:"gf",nominal:100,tol:20,min:10,max:400,step:5}],
+     actions:[
+       {id:"clamp",label:"Load the lead frame on the bond stage and clamp it"},
+       {id:"set",label:"Set bond recipe",type:"set"},
+       {id:"guard",label:"Close the stage guard and clear fingers from the stage",safety:true},
+       {id:"dispense",label:"Dispense an epoxy dot on the centre of the pad"},
+       {id:"pick",label:"Pick a die from the tape with the vacuum collet"},
+       {id:"place",label:"Place the die on the epoxy with the set force"},
+       {id:"look",label:"Check placement under the microscope: centred, level, fillet on all sides"}]},
+    {id:"cure",title:"Cure the epoxy",station:"cure",
+     why:"Cure temperature and time together set how fully the epoxy hardens. A warmer oven cures faster, but only within the datasheet window.",
+     hazard:"The oven, racks and lead frames are hot. Use heat-resistant gloves to remove them.",
+     params:[
+       {id:"cure_temp",label:"Cure temperature",unit:"°C",nominal:150,tol:10,min:80,max:220,step:5},
+       {id:"cure_min",label:"Cure time",unit:"min",nominal:60,tol:10,min:5,max:240,step:1}],
+     actions:[
+       {id:"set",label:"Set cure recipe",type:"set"},
+       {id:"load",label:"Load the lead frames into the oven rack"},
+       {id:"timer",label:"Close the oven and start the cure timer"},
+       {id:"gloves",label:"Put on heat-resistant gloves",safety:true},
+       {id:"remove",label:"Remove the rack when the timer ends"},
+       {id:"cool",label:"Let the lead frames cool on the bench"}]},
+    {id:"insp",title:"Inspect and decide",station:"inspect",final:true,
+     why:"Bond-line thickness, voids and shear strength together describe a good die attach. Check each against the specification before release.",
+     actions:[
+       {id:"scope",label:"Inspect under the microscope: fillet, tilt, epoxy on the die top"},
+       {id:"measure",label:"Measure bond-line thickness, void area and die shear strength",type:"measure"}]}
+  ]
+};
+
+LIB.wirebond = {
+  meta:{short:"Wire bonding (Au ball)", group:"back", name:"Thermosonic gold ball bonding with {wire_um} µm wire on a die-attached lead frame",
+        source:"Standard reference data (textbook-typical values)", note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"wirebond", wire_um:25},
+  stations:[
+    {id:"esd",label:"ESD prep",sub:"Bench entry"},{id:"prep",label:"Wire & frame",sub:"Setup"},
+    {id:"bond",label:"Wire bonder",sub:"Ball bonding"},{id:"test",label:"Bond tests",sub:"Shear / pull"}],
+  steps:[
+    {id:"ppe",title:"Prepare the ESD bench",station:"esd",
+     why:"The pads are tiny and static damages the circuit under them. Ground yourself and the bench first.",actions:ESD_ACTIONS},
+    {id:"check",title:"Set up the wire and the lead frame",station:"prep",
+     why:"The wire diameter, a clean capillary and a firmly clamped frame decide whether bonds stick.",
+     hazard:"The heater block is hot and the flame-off spark uses high voltage. Keep hands clear.",
+     actions:[
+       {id:"spool",label:"Check the gold wire: diameter {wire_um} µm, lot and spool tail"},
+       {id:"cap",label:"Inspect the capillary tip for wear or contamination"},
+       {id:"mount",label:"Mount the die-attached lead frame on the heater block and clamp it"},
+       {id:"cover",label:"Confirm the stage guard and flame-off cover are closed",safety:true}]},
+    {id:"teach",title:"Teach the bond points",station:"bond",
+     why:"The machine must be told exactly where the first bond (die pad) and the second bond (lead finger) are. Poor teaching points cause misplaced bonds and shorts.",
+     actions:[
+       {id:"first",label:"Teach the first-bond point on a die pad under the microscope"},
+       {id:"second",label:"Teach the second-bond point on the lead finger"},
+       {id:"path",label:"Check that the wire path clears the die edge"}]},
+    {id:"bond",title:"Set the recipe and bond",station:"bond",
+     why:"Force, ultrasonic power, time and heat together weld the ball to the pad. Too little gives a weak, lifting bond; too much flattens the ball and can crack the silicon under the pad. Force and power scale with the wire cross-section.",
+     hazard:"The stage moves quickly and the heater block is hot. Keep fingers clear.",
+     params:[
+       {id:"bond_force",label:"Bond force",unit:"gf",nominal:50,tol:10,min:5,max:200,step:1},
+       {id:"us_power",label:"Ultrasonic power",unit:"mW",nominal:80,tol:10,min:10,max:300,step:1},
+       {id:"bond_time",label:"Bond time",unit:"ms",nominal:15,tol:3,min:2,max:60,step:1},
+       {id:"stage_temp",label:"Stage temperature",unit:"°C",nominal:175,tol:15,min:100,max:260,step:5},
+       {id:"loop_height",label:"Loop height",unit:"µm",nominal:150,tol:20,min:50,max:400,step:5}],
+     actions:[
+       {id:"set",label:"Set bond recipe",type:"set"},
+       {id:"guard",label:"Close the stage guard and clear fingers from the stage",safety:true},
+       {id:"testbond",label:"Run a test bond on a sacrificial unit"},
+       {id:"look",label:"Check the ball and loop under the microscope"},
+       {id:"run",label:"Run the auto-bond cycle on the lead frame"}]},
+    {id:"insp",title:"Test the bonds and decide",station:"test",final:true,
+     why:"Ball shear and wire pull tests show how strong the bonds are. Check them with the ball size and loop height.",
+     actions:[
+       {id:"scope",label:"Inspect all units under the microscope: loops, tails, ball placement"},
+       {id:"measure",label:"Run ball shear and wire pull tests on sample units",type:"measure"}]}
+  ]
+};
+
+LIB.mold = {
+  meta:{short:"Molding (transfer)", group:"back", name:"Transfer molding of a wire-bonded lead frame strip with epoxy moulding compound (EMC)",
+        source:"Standard reference data (textbook-typical values)", note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"mold"},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"PPE"},{id:"prep",label:"Materials",sub:"EMC / strips"},
+    {id:"press",label:"Mold press",sub:"Transfer mold"},{id:"pmc",label:"PMC oven",sub:"Post-mold cure"},
+    {id:"inspect",label:"X-ray / scope",sub:"Inspection"}],
+  steps:[
+    {id:"ppe",title:"Put on protective equipment",station:"gown",
+     why:"The press is hot and closes with high force, and EMC dust irritates skin and lungs.",
+     actions:[
+       {id:"glasses",label:"Put on safety glasses and the ESD smock",safety:true},
+       {id:"dust",label:"Put on a dust mask and gloves for handling EMC pellets",safety:true},
+       {id:"stop",label:"Locate the press emergency stop and confirm it is clear"}]},
+    {id:"check",title:"Check the materials",station:"prep",
+     why:"EMC is stored cold and has a limited out-time. A dirty mold or damaged wires ruin the strip before it is molded.",
+     hazard:"EMC pellets are irritants. Avoid dust and skin contact.",
+     actions:[
+       {id:"emc",label:"Check the EMC lot, expiry and out-time on the pellet bag"},
+       {id:"mold",label:"Verify the mold surface is clean and the release-agent log is current"},
+       {id:"strip",label:"Inspect the wire-bonded strips: no loose or crossed wires"}]},
+    {id:"setup",title:"Set the mold recipe",station:"press",
+     why:"Mold temperature, pressure, transfer time and cure time come from the EMC datasheet. A hot mold gels the compound sooner, so there is less time to fill the cavity.",
+     params:[
+       {id:"mold_temp",label:"Mold temperature",unit:"°C",nominal:175,tol:5,min:140,max:200,step:1},
+       {id:"pressure",label:"Transfer pressure",unit:"MPa",nominal:7,tol:1,min:1,max:15,step:0.5},
+       {id:"transfer_s",label:"Transfer time",unit:"s",nominal:12,tol:3,min:2,max:40,step:1},
+       {id:"cure_s",label:"Cure time",unit:"s",nominal:90,tol:10,min:20,max:300,step:5}],
+     actions:[
+       {id:"set",label:"Set mold recipe",type:"set"},
+       {id:"heat",label:"Wait for the mold to reach the set temperature"}]},
+    {id:"load",title:"Load the strips and pellets",station:"press",
+     why:"Strips go in the cavities and pellets in the pots. Everything in the open mold is very hot.",
+     hazard:"The mold is hot (about 175 °C) and the press closes with high force. Keep hands clear.",
+     actions:[
+       {id:"gloves",label:"Put on heat-resistant gloves",safety:true},
+       {id:"strips",label:"Place the strips in the mold cavities with tweezers"},
+       {id:"pellets",label:"Place EMC pellets in the transfer pots"}]},
+    {id:"press",title:"Run the press",station:"press",
+     why:"The press closes, melts the pellets, pushes the compound through the runners into the cavities, and holds it until it cures.",
+     hazard:"The press closes with high force. The guard must be closed and the emergency stop clear.",
+     actions:[
+       {id:"guard",label:"Confirm the press guard is closed and the emergency stop is clear",safety:true},
+       {id:"start",label:"Start the press: close, transfer and cure"},
+       {id:"watch",label:"Watch the transfer pressure and time on the display"},
+       {id:"open",label:"Confirm the cure time ends and the press opens"}]},
+    {id:"eject",title:"Eject and post-mold cure",station:"pmc",
+     why:"Strips come out hot and not fully cured. Excess compound is removed, then a long oven cure finishes the hardening.",
+     hazard:"Strips and molds are hot. Never eject by hand.",
+     actions:[
+       {id:"eject",label:"Eject the strips with the ejector tool, not by hand",safety:true},
+       {id:"deflash",label:"Remove the cull and runner (deflash)"},
+       {id:"rack",label:"Load the strips into the post-mold cure oven rack"},
+       {id:"pmc",label:"Start the post-mold cure timer"}]},
+    {id:"insp",title:"Inspect and decide",station:"inspect",final:true,
+     why:"Fill, wire sweep, voids and cure degree together describe a good molded package. Check each against the specification.",
+     actions:[
+       {id:"scope",label:"Inspect the strips: voids, incomplete fill, flash, colour"},
+       {id:"measure",label:"Measure cavity fill, wire sweep (X-ray), voids and cure degree",type:"measure"}]}
+  ]
+};
+
+LIB.saw = {
+  meta:{short:"Saw / dicing", group:"back", name:"Singulation of a molded strip with a diamond blade saw (100 µm blade)",
+        source:"Standard reference data (textbook-typical values)", note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"saw"},
+  stations:[
+    {id:"gown",label:"Gowning",sub:"PPE"},{id:"prep",label:"Setup",sub:"Blade / water"},
+    {id:"saw",label:"Dicing saw",sub:"Blade cut"},{id:"rinse",label:"Rinse / dry",sub:"Clean"},
+    {id:"inspect",label:"Microscope",sub:"Inspection"}],
+  steps:[
+    {id:"ppe",title:"Put on protective equipment",station:"gown",
+     why:"The saw throws water and fine debris, and the blade turns at tens of thousands of revolutions per minute.",
+     actions:[
+       {id:"glasses",label:"Put on safety glasses",safety:true},
+       {id:"gloves",label:"Put on gloves and the ESD smock",safety:true},
+       {id:"water",label:"Confirm the DI water supply and the waste drain are working"}]},
+    {id:"check",title:"Check the blade and the saw",station:"prep",
+     why:"A worn blade or a blocked nozzle causes chipping and scratches. Check them before mounting the strip.",
+     hazard:"The blade turns at tens of thousands of rpm. Never open the door while the spindle is running.",
+     actions:[
+       {id:"blade",label:"Check the blade type, exposure and wear log"},
+       {id:"nozzle",label:"Verify the spray nozzles and coolant flow are clear"},
+       {id:"door",label:"Confirm the saw door interlock closes",safety:true}]},
+    {id:"mount",title:"Mount and align the strip",station:"prep",
+     why:"The strip must be held flat on the tape and lined up with the cut lines, or the blade cuts through the units.",
+     actions:[
+       {id:"tape",label:"Mount the molded strip on the dicing tape and frame"},
+       {id:"chuck",label:"Place the frame on the chuck and switch on vacuum"},
+       {id:"align",label:"Align the strip to the cut lines using the alignment marks"}]},
+    {id:"cut",title:"Set the recipe and cut",station:"saw",
+     why:"Higher feed or lower spindle speed makes larger chips; too little coolant lets debris scratch the surface. Cut depth must reach through the package into the tape, but not through the tape.",
+     hazard:"The blade turns at tens of thousands of rpm. Keep the door closed while cutting.",
+     params:[
+       {id:"spindle_krpm",label:"Spindle speed",unit:"krpm",nominal:30,tol:3,min:5,max:60,step:1},
+       {id:"feed_mms",label:"Feed rate",unit:"mm/s",nominal:50,tol:10,min:5,max:150,step:1},
+       {id:"coolant_lpm",label:"Coolant flow",unit:"L/min",nominal:1.5,tol:0.3,min:0.1,max:5,step:0.1},
+       {id:"cut_depth_um",label:"Cut depth below the package bottom",unit:"µm",nominal:50,tol:15,min:0,max:200,step:5}],
+     actions:[
+       {id:"set",label:"Set cut recipe",type:"set"},
+       {id:"start",label:"Close the door and start the first cut"},
+       {id:"look",label:"Stop after the first cut and inspect it under the microscope"},
+       {id:"watch",label:"Run the remaining cuts and watch the spindle load and coolant flow"}]},
+    {id:"clean",title:"Rinse, dry and unload",station:"rinse",
+     why:"Cutting debris must be washed off before it dries onto the units.",
+     hazard:"The slurry contains fine debris. Wear gloves and use the labelled waste container.",
+     actions:[
+       {id:"rinse",label:"Rinse the strip with DI water and spin-dry"},
+       {id:"frame",label:"Remove the frame from the chuck with gloves"},
+       {id:"waste",label:"Put the slurry waste in the labelled container",safety:true}]},
+    {id:"insp",title:"Inspect and decide",station:"inspect",final:true,
+     why:"Chip size, cut depth and surface scratches together describe a good cut. Check each against the specification.",
+     actions:[
+       {id:"scope",label:"Inspect the units under the microscope: edge chips, scratches, burrs"},
+       {id:"measure",label:"Measure chip size and cut depth, and count scratched units",type:"measure"}]}
+  ]
+};
+
+LIB.test = {
+  meta:{short:"Package testing", group:"back", name:"Final test of a 20-unit correlation lot on a bench tester with a socket",
+        source:"Standard reference data (textbook-typical values)", note:"Replace with equipment settings from the partner lab when available.", version:"0.1"},
+  weights:W_STD,
+  model:{type:"test"},
+  stations:[
+    {id:"esd",label:"ESD prep",sub:"Bench entry"},{id:"prep",label:"Setup",sub:"Program / socket"},
+    {id:"tester",label:"Tester",sub:"Run units"},{id:"review",label:"Review",sub:"Bin summary"}],
+  steps:[
+    {id:"ppe",title:"Prepare the ESD bench",station:"esd",
+     why:"Finished packages are still sensitive to static. Ground yourself and the bench first.",actions:ESD_ACTIONS},
+    {id:"check",title:"Check the program, socket and tray",station:"prep",
+     why:"A worn socket or an out-of-date tester gives wrong verdicts. This tray is a correlation lot: 16 known-good and 4 known-bad units used to qualify the test setup.",
+     actions:[
+       {id:"spec",label:"Read the test spec: conditions and limits"},
+       {id:"pins",label:"Inspect the socket pins: clean, none bent"},
+       {id:"cal",label:"Check the tester calibration sticker is in date"},
+       {id:"tray",label:"Verify the tray: 20 units, pin 1 orientation marked"}]},
+    {id:"setup",title:"Set the test conditions",station:"tester",
+     why:"Supply voltage, temperature, test time and socket force all affect the verdict. Too low a voltage or too light a contact makes good units fail; too short a test lets bad units through.",
+     hazard:"At high temperature the socket and units are hot. Use heat-resistant gloves.",
+     params:[
+       {id:"vdd",label:"Supply voltage",unit:"V",nominal:3.3,tol:0.1,min:0.5,max:6,step:0.1},
+       {id:"test_temp",label:"Test temperature",unit:"°C",nominal:25,tol:5,min:-40,max:150,step:1},
+       {id:"test_ms",label:"Test time per unit",unit:"ms",nominal:50,tol:10,min:1,max:500,step:1},
+       {id:"contact_gf",label:"Socket contact force",unit:"gf",nominal:150,tol:30,min:10,max:400,step:5}],
+     actions:[
+       {id:"program",label:"Load the test program"},
+       {id:"set",label:"Set test conditions",type:"set"},
+       {id:"stable",label:"Wait for the temperature to stabilise"},
+       {id:"self",label:"Run the tester self-check"}]},
+    {id:"run",title:"Test the units",station:"tester",
+     why:"Each unit is loaded, tested and sorted by verdict. Handle them only with the vacuum pen.",
+     hazard:"Hot socket, pinch points on the handler arm and static discharge. Use gloves and the vacuum pen.",
+     actions:[
+       {id:"gloves",label:"Put on heat-resistant gloves for the socket and hot units",safety:true},
+       {id:"load",label:"Load a unit into the socket with the vacuum pen, pin 1 matched"},
+       {id:"close",label:"Close the socket lid and start the test"},
+       {id:"all",label:"Test all 20 units and sort them into pass and fail trays"}]},
+    {id:"insp",title:"Review and decide",station:"review",final:true,
+     why:"Because this is a correlation lot, you know how many bad units there are. The test setup is only qualified if it finds every one of them and fails no good unit.",
+     actions:[
+       {id:"bins",label:"Review the bin summary and the fail list"},
+       {id:"measure",label:"Compare the results with the known correlation units",type:"measure"}]}
+  ]
+};
+
+/* ====== work orders: randomised targets and datasheet values ====== */
+const LB=["Reference: 4,000 rpm gives 1.0 µm, and thickness varies with 1/√(spin speed).","All other settings follow the standard recipe."];
+LIB.litho.vars={t:"1.0"};
+LIB.litho.workOrders=[
+  {id:"LIT-1.0",label:"Resist 1.0 µm (standard)",vars:{t:"1.0"},nominals:{spin_rpm:4000},tols:{spin_rpm:300},model:{thickness_target_um:1.0,thickness_tol_um:0.05},brief:["Coat positive resist to {t} µm.",...LB]},
+  {id:"LIT-0.8",label:"Resist 0.8 µm",vars:{t:"0.8"},nominals:{spin_rpm:6250},tols:{spin_rpm:400},model:{thickness_target_um:0.8,thickness_tol_um:0.04},brief:["Coat positive resist to {t} µm.",...LB]},
+  {id:"LIT-1.2",label:"Resist 1.2 µm",vars:{t:"1.2"},nominals:{spin_rpm:2800},tols:{spin_rpm:250},model:{thickness_target_um:1.2,thickness_tol_um:0.06},brief:["Coat positive resist to {t} µm.",...LB]},
+  {id:"LIT-1.5",label:"Resist 1.5 µm",vars:{t:"1.5"},nominals:{spin_rpm:1800},tols:{spin_rpm:150},model:{thickness_target_um:1.5,thickness_tol_um:0.075},brief:["Coat positive resist to {t} µm.",...LB]}
+];
+const EB=["Etch {film_nm} nm of silicon dioxide through the resist mask.","Reference: the etch rate is 100 nm/min at standard settings. Use 10 % over-etch.","All other settings follow the standard recipe."];
+LIB.etch.vars={film_nm:"500"};
+LIB.etch.workOrders=[
+  {id:"ETC-500",label:"Oxide 500 nm (standard)",vars:{film_nm:"500"},nominals:{etch_s:330},tols:{etch_s:30},model:{film_nm:500},brief:EB},
+  {id:"ETC-400",label:"Oxide 400 nm",vars:{film_nm:"400"},nominals:{etch_s:264},tols:{etch_s:25},model:{film_nm:400},brief:EB},
+  {id:"ETC-600",label:"Oxide 600 nm",vars:{film_nm:"600"},nominals:{etch_s:396},tols:{etch_s:35},model:{film_nm:600},brief:EB},
+  {id:"ETC-800",label:"Oxide 800 nm",vars:{film_nm:"800"},nominals:{etch_s:528},tols:{etch_s:45},model:{film_nm:800},brief:EB}
+];
+const IB=["Implant arsenic at {energy} keV to a dose of {dose}×10¹⁵ ions/cm².","The beam current is fixed at {beam} mA. The wafer area is about 177 cm².","Calculate the implant time from Q = I·t / (q·A). Anneal settings follow the standard recipe."];
+LIB.implant.vars={dose:"1.0",beam:"1.0",energy:"50"};
+LIB.implant.workOrders=[
+  {id:"IMP-1.0",label:"1.0×10¹⁵ at 1.0 mA (standard)",vars:{dose:"1.0",beam:"1.0",energy:"50"},nominals:{energy:50,implant_s:28},tols:{energy:5,implant_s:4},model:{dose_target:1.0,beam_ma:1.0},brief:IB},
+  {id:"IMP-2.0",label:"2.0×10¹⁵ at 1.0 mA, 40 keV",vars:{dose:"2.0",beam:"1.0",energy:"40"},nominals:{energy:40,implant_s:57},tols:{energy:5,implant_s:8},model:{dose_target:2.0,beam_ma:1.0},brief:IB},
+  {id:"IMP-0.5",label:"0.5×10¹⁵ at 1.0 mA, 60 keV",vars:{dose:"0.5",beam:"1.0",energy:"60"},nominals:{energy:60,implant_s:14},tols:{energy:5,implant_s:2},model:{dose_target:0.5,beam_ma:1.0},brief:IB},
+  {id:"IMP-1.5",label:"1.5×10¹⁵ at 2.0 mA",vars:{dose:"1.5",beam:"2.0",energy:"50"},nominals:{energy:50,implant_s:21},tols:{energy:5,implant_s:3},model:{dose_target:1.5,beam_ma:2.0},brief:IB}
+];
+const CB=["Deposit {target_nm} nm of silicon dioxide.","Reference: the growth rate is about 200 nm/min at standard settings.","All other settings follow the standard recipe."];
+LIB.cvd.vars={target_nm:"500"};
+LIB.cvd.workOrders=[
+  {id:"CVD-500",label:"Oxide 500 nm (standard)",vars:{target_nm:"500"},nominals:{dep_s:150},tols:{dep_s:10},model:{target_nm:500},brief:CB},
+  {id:"CVD-300",label:"Oxide 300 nm",vars:{target_nm:"300"},nominals:{dep_s:90},tols:{dep_s:6},model:{target_nm:300},brief:CB},
+  {id:"CVD-700",label:"Oxide 700 nm",vars:{target_nm:"700"},nominals:{dep_s:210},tols:{dep_s:14},model:{target_nm:700},brief:CB},
+  {id:"CVD-1000",label:"Oxide 1,000 nm",vars:{target_nm:"1000"},nominals:{dep_s:300},tols:{dep_s:20},model:{target_nm:1000},brief:CB}
+];
+const MB=["Sputter {target_nm} nm of aluminium. The Ti/TiN barrier was deposited in an earlier step and is not part of this recipe.","Reference: the deposition rate is about 600 nm/min at standard settings.","All other settings follow the standard recipe."];
+LIB.metal.vars={target_nm:"1000"};
+LIB.metal.workOrders=[
+  {id:"MET-1000",label:"Al 1,000 nm (standard)",vars:{target_nm:"1000"},nominals:{dep_s:100},tols:{dep_s:5},model:{target_nm:1000},brief:MB},
+  {id:"MET-600",label:"Al 600 nm",vars:{target_nm:"600"},nominals:{dep_s:60},tols:{dep_s:3},model:{target_nm:600},brief:MB},
+  {id:"MET-800",label:"Al 800 nm",vars:{target_nm:"800"},nominals:{dep_s:80},tols:{dep_s:4},model:{target_nm:800},brief:MB},
+  {id:"MET-1200",label:"Al 1,200 nm",vars:{target_nm:"1200"},nominals:{dep_s:120},tols:{dep_s:6},model:{target_nm:1200},brief:MB}
+];
+const DB=["Attach a {die_mm} × {die_mm} mm die.","Epoxy datasheet cure schedule: {cure_temp} °C for {cure_min} min.","Reference: a 2.0 mm die uses a 120 ms dispense time and 100 gf bond force. Epoxy volume and bond force scale with die area (side squared)."];
+LIB.diebond.vars={die_mm:"2.0",cure_temp:"150",cure_min:"60"};
+LIB.diebond.workOrders=[
+  {id:"DB-2.0",label:"2.0 mm die, 150 °C / 60 min (standard)",vars:{die_mm:"2.0",cure_temp:"150",cure_min:"60"},nominals:{dispense_ms:120,bond_force:100,cure_temp:150,cure_min:60},tols:{dispense_ms:20,bond_force:20,cure_temp:10,cure_min:10},brief:DB},
+  {id:"DB-1.5",label:"1.5 mm die, 175 °C / 30 min",vars:{die_mm:"1.5",cure_temp:"175",cure_min:"30"},nominals:{dispense_ms:70,bond_force:55,cure_temp:175,cure_min:30},tols:{dispense_ms:12,bond_force:11,cure_temp:10,cure_min:6},brief:DB},
+  {id:"DB-2.5",label:"2.5 mm die, 160 °C / 45 min",vars:{die_mm:"2.5",cure_temp:"160",cure_min:"45"},nominals:{dispense_ms:190,bond_force:155,cure_temp:160,cure_min:45},tols:{dispense_ms:32,bond_force:31,cure_temp:10,cure_min:8},brief:DB},
+  {id:"DB-3.0",label:"3.0 mm die, 125 °C / 90 min",vars:{die_mm:"3.0",cure_temp:"125",cure_min:"90"},nominals:{dispense_ms:270,bond_force:225,cure_temp:125,cure_min:90},tols:{dispense_ms:45,bond_force:45,cure_temp:10,cure_min:15},brief:DB}
+];
+const WB=["Bond {wire_um} µm gold wire.","Reference: 25 µm wire uses 50 gf force, 80 mW ultrasonic power, 15 ms, a 175 °C stage and a 150 µm loop.","Force and power scale with the wire cross-section (diameter squared). Loop height is 6 × the wire diameter. Time and temperature stay the same."];
+LIB.wirebond.vars={wire_um:"25"};
+LIB.wirebond.workOrders=[
+  {id:"WB-25",label:"25 µm wire (standard)",vars:{wire_um:"25"},nominals:{bond_force:50,us_power:80,bond_time:15,stage_temp:175,loop_height:150},tols:{bond_force:10,us_power:10,bond_time:3,stage_temp:15,loop_height:20},model:{wire_um:25},brief:WB},
+  {id:"WB-18",label:"18 µm wire",vars:{wire_um:"18"},nominals:{bond_force:26,us_power:41,bond_time:15,stage_temp:175,loop_height:108},tols:{bond_force:5,us_power:5,bond_time:3,stage_temp:15,loop_height:15},model:{wire_um:18},brief:WB},
+  {id:"WB-20",label:"20 µm wire",vars:{wire_um:"20"},nominals:{bond_force:32,us_power:51,bond_time:15,stage_temp:175,loop_height:120},tols:{bond_force:6,us_power:6,bond_time:3,stage_temp:15,loop_height:17},model:{wire_um:20},brief:WB},
+  {id:"WB-30",label:"30 µm wire",vars:{wire_um:"30"},nominals:{bond_force:72,us_power:115,bond_time:15,stage_temp:175,loop_height:180},tols:{bond_force:14,us_power:14,bond_time:3,stage_temp:15,loop_height:25},model:{wire_um:30},brief:WB}
+];
+const MDB=["Mold the strips with the EMC datasheet settings: {m_temp} °C mold temperature, {m_press} MPa transfer pressure, {m_fill} s transfer time, {m_cure} s cure time.","Read the values from the datasheet; they depend on the compound."];
+LIB.mold.vars={m_temp:"175",m_press:"7",m_fill:"12",m_cure:"90"};
+LIB.mold.workOrders=[
+  {id:"MOLD-A",label:"EMC-A, 175 °C (standard)",vars:{m_temp:"175",m_press:"7",m_fill:"12",m_cure:"90"},nominals:{mold_temp:175,pressure:7,transfer_s:12,cure_s:90},tols:{mold_temp:5,pressure:1,transfer_s:3,cure_s:10},brief:MDB},
+  {id:"MOLD-B",label:"EMC-B, 170 °C",vars:{m_temp:"170",m_press:"6",m_fill:"15",m_cure:"100"},nominals:{mold_temp:170,pressure:6,transfer_s:15,cure_s:100},tols:{mold_temp:5,pressure:1,transfer_s:3,cure_s:12},brief:MDB},
+  {id:"MOLD-C",label:"EMC-C, 180 °C",vars:{m_temp:"180",m_press:"8",m_fill:"10",m_cure:"80"},nominals:{mold_temp:180,pressure:8,transfer_s:10,cure_s:80},tols:{mold_temp:5,pressure:1,transfer_s:2,cure_s:8},brief:MDB},
+  {id:"MOLD-D",label:"EMC-D, thick package",vars:{m_temp:"175",m_press:"9",m_fill:"16",m_cure:"110"},nominals:{mold_temp:175,pressure:9,transfer_s:16,cure_s:110},tols:{mold_temp:5,pressure:1,transfer_s:3,cure_s:12},brief:MDB}
+];
+const SB=["Cut the strip with the blade and package datasheet settings: spindle {s_krpm} krpm, feed {s_feed} mm/s, coolant {s_cool} L/min, cut depth {s_depth} µm into the tape.","Read the values from the datasheet; they depend on the blade and the package thickness."];
+LIB.saw.vars={s_krpm:"30",s_feed:"50",s_cool:"1.5",s_depth:"50"};
+LIB.saw.workOrders=[
+  {id:"SAW-A",label:"Standard package",vars:{s_krpm:"30",s_feed:"50",s_cool:"1.5",s_depth:"50"},nominals:{spindle_krpm:30,feed_mms:50,coolant_lpm:1.5,cut_depth_um:50},tols:{spindle_krpm:3,feed_mms:10,coolant_lpm:0.3,cut_depth_um:15},brief:SB},
+  {id:"SAW-B",label:"Thick package",vars:{s_krpm:"35",s_feed:"40",s_cool:"1.8",s_depth:"60"},nominals:{spindle_krpm:35,feed_mms:40,coolant_lpm:1.8,cut_depth_um:60},tols:{spindle_krpm:3,feed_mms:8,coolant_lpm:0.3,cut_depth_um:15},brief:SB},
+  {id:"SAW-C",label:"Fast-feed package",vars:{s_krpm:"28",s_feed:"60",s_cool:"1.2",s_depth:"40"},nominals:{spindle_krpm:28,feed_mms:60,coolant_lpm:1.2,cut_depth_um:40},tols:{spindle_krpm:3,feed_mms:12,coolant_lpm:0.25,cut_depth_um:12},brief:SB},
+  {id:"SAW-D",label:"Fine-pitch package",vars:{s_krpm:"32",s_feed:"45",s_cool:"1.6",s_depth:"50"},nominals:{spindle_krpm:32,feed_mms:45,coolant_lpm:1.6,cut_depth_um:50},tols:{spindle_krpm:3,feed_mms:9,coolant_lpm:0.3,cut_depth_um:15},brief:SB}
+];
+const TB=["Run the correlation lot with the conditions on the test spec: supply {t_v} V, temperature {t_temp} °C, test time {t_ms} ms, socket contact force {t_force} gf.","Read the values from the test spec; they depend on the product."];
+LIB.test.vars={t_v:"3.3",t_temp:"25",t_ms:"50",t_force:"150"};
+LIB.test.workOrders=[
+  {id:"TEST-A",label:"3.3 V, room temperature (standard)",vars:{t_v:"3.3",t_temp:"25",t_ms:"50",t_force:"150"},nominals:{vdd:3.3,test_temp:25,test_ms:50,contact_gf:150},tols:{vdd:0.1,test_temp:5,test_ms:10,contact_gf:30},brief:TB},
+  {id:"TEST-B",label:"1.8 V, hot test 85 °C",vars:{t_v:"1.8",t_temp:"85",t_ms:"80",t_force:"150"},nominals:{vdd:1.8,test_temp:85,test_ms:80,contact_gf:150},tols:{vdd:0.1,test_temp:5,test_ms:16,contact_gf:30},brief:TB},
+  {id:"TEST-C",label:"5.0 V, room temperature",vars:{t_v:"5.0",t_temp:"25",t_ms:"30",t_force:"200"},nominals:{vdd:5,test_temp:25,test_ms:30,contact_gf:200},tols:{vdd:0.1,test_temp:5,test_ms:6,contact_gf:40},brief:TB},
+  {id:"TEST-D",label:"2.5 V, hot test 125 °C",vars:{t_v:"2.5",t_temp:"125",t_ms:"60",t_force:"120"},nominals:{vdd:2.5,test_temp:125,test_ms:60,contact_gf:120},tols:{vdd:0.1,test_temp:5,test_ms:12,contact_gf:25},brief:TB}
+];
+
+
+const ORDER = ['litho','etch','implant','cvd','metal','diebond','wirebond','mold','saw','test'];
+const NEED = {
+  litho:['spin_rpm','sb_temp','sb_s','peb_temp','dose','focus','dev_s'],
+  etch:['rf_power','pressure','gas_flow','etch_s'],
+  implant:['energy','tilt','implant_s','rta_temp','rta_s'],
+  cvd:['dep_temp','pressure','rf_power','sih4','dep_s'],
+  metal:['clean_s','tgt_s','ar_flow','pressure','dc_kw','sub_temp','dep_s']
+};
+
+/* ----------------------------- engine ----------------------------- */
+let CUR='litho';
+let BASE = LIB.litho;
+let WOSEL = 'random';
+let LASTWO = -1;
+let R = clone(LIB.litho);
+let S = null;
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+const $ = s => document.querySelector(s);
+const key = (si,ai) => si+'.'+ai;
+const fmt = (n,d=2) => (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toString();
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function resolveVars(obj, vars){
+  let t=JSON.stringify(obj);
+  t=t.replace(/\{([a-z_0-9]+)\}/g,(m,k)=>{ if(vars && vars[k]!==undefined){ return String(vars[k]).replace(/\\/g,'\\\\').replace(/"/g,'\\"'); } return m; });
+  return JSON.parse(t);
+}
+function applyWO(base, wo){
+  const r=clone(base); delete r.workOrders;
+  r.steps.forEach(st=>(st.params||[]).forEach(p=>{
+    if(wo.nominals && wo.nominals[p.id]!==undefined) p.nominal=wo.nominals[p.id];
+    if(wo.tols && wo.tols[p.id]!==undefined) p.tol=wo.tols[p.id];
+  }));
+  r.model=Object.assign({}, r.model, wo.model||{});
+  r.wo={id:wo.id, label:wo.label||wo.id, brief:(wo.brief||[]).slice()};
+  return resolveVars(r, Object.assign({}, base.vars, wo.vars));
+}
+function pickWO(base){
+  const list=base.workOrders||[];
+  if(!list.length) return null;
+  if(WOSEL==='std') return list[0];
+  if(WOSEL!=='random'){ const f=list.find(w=>w.id===WOSEL); if(f) return f; }
+  let i; do{ i=Math.floor(Math.random()*list.length); }while(list.length>1 && i===LASTWO);
+  LASTWO=i; return list[i];
+}
+function buildR(){
+  const wo=pickWO(BASE);
+  if(wo) R=applyWO(BASE, wo);
+  else { R=clone(BASE); delete R.workOrders; R=resolveVars(R, BASE.vars); R.wo=null; }
+}
+function fresh(mode){
+  buildR();
+  S = { mode: mode || (S ? S.mode : 'guided'), si:0, done:{}, vals:{}, com:{}, stepDone:[],
+        orderErr:0, safetyViol:0, decision:null, finished:false, log:[], t0:Date.now(), outcome:null, measured:false, msg:null };
+}
+function nom(id){
+  for(const st of R.steps) for(const p of (st.params||[])) if(p.id===id) return p.nominal;
+  return undefined;
+}
+function pv(id){
+  for(const si in S.com) if(S.com[si][id]) return S.com[si][id].v;
+  return nom(id);
+}
+function note(msg, neutral, cls){
+  S.log.push({t:Math.round((Date.now()-S.t0)/1000), msg:(S.mode==='assessment' && neutral)?neutral:msg, cls:(S.mode==='assessment')?'':cls});
+}
+function toast(text, cls){ S.msg={text:text||'',cls:cls||''}; const m=$('#msg'); if(m){ m.textContent=S.msg.text; m.className=S.msg.cls; } }
+function isDone(si,ai){ return !!S.done[key(si,ai)]; }
+function stepActionsDone(si){ return R.steps[si].actions.every((a,i)=>isDone(si,i)); }
+function stepComplete(si){ const st=R.steps[si]; return stepActionsDone(si) && (!st.final || S.decision!==null); }
+function nextActionIndex(si){ const st=R.steps[si]; for(let i=0;i<st.actions.length;i++) if(!isDone(si,i)) return i; return -1; }
+
+function commit(si){
+  const st=R.steps[si], vals=S.vals[si]||{}, res={};
+  for(const p of (st.params||[])){
+    const raw=vals[p.id]; const v=parseFloat(raw);
+    if(raw===undefined || raw==='' || isNaN(v)){ toast('Enter a value for "'+p.label+'".','bad'); return false; }
+    if(v<p.min || v>p.max){ toast(p.label+' must be between '+p.min+' and '+p.max+' '+p.unit+'.','bad'); return false; }
+    const dev=Math.abs(v-p.nominal);
+    res[p.id]={v:v, g: dev<=p.tol ? 1 : (dev<=2*p.tol ? 0.5 : 0)};
+  }
+  S.com[si]=res; return true;
+}
+
+function perform(ai){
+  if(S.finished) return;
+  const si=S.si, st=R.steps[si], a=st.actions[ai];
+  const already=isDone(si,ai);
+  const resettable=(a.type==='set') && S.mode!=='assessment';
+  if(already && !resettable) return;
+  if(!already){
+    const pend=[]; for(let i=0;i<ai;i++) if(!isDone(si,i)) pend.push(i);
+    if(pend.length){
+      const pendSafety=pend.some(i=>st.actions[i].safety);
+      if(pendSafety) S.safetyViol++; else S.orderErr++;
+      note('Out of sequence: "'+a.label+'" attempted before "'+st.actions[pend[0]].label+'".','Action recorded: '+a.label,'bad');
+      if(S.mode!=='assessment'){
+        toast('Out of sequence. Complete first: "'+st.actions[pend[0]].label+'".','bad'); render(); return;
+      }
+    }
+  }
+  if(a.type==='set'){
+    if(!commit(si)) return;
+    if(S.mode!=='assessment') toast('Settings applied. See the result beside each value.','ok');
+  } else if(a.type==='measure'){
+    S.outcome=computeOutcome(); S.measured=true;
+  } else { toast(''); }
+  if(!already){ S.done[key(si,ai)]=true; note('Done: '+a.label,'Action recorded: '+a.label,'ok'); }
+  else { note('Settings re-applied: '+a.label,'','ok'); }
+  render();
+}
+
+function advance(){
+  const si=S.si; if(!stepComplete(si)) return;
+  S.stepDone[si]=true;
+  if(si<R.steps.length-1){ S.si++; toast(''); note('Moved to: '+R.steps[S.si].title,'Moved to next step','ok'); }
+  render();
+}
+
+function decide(choice){
+  if(!S.outcome){ toast('Measure the wafer first.','bad'); return; }
+  const correct=S.outcome.pass?'Pass':'Rework';
+  S.decision={choice:choice, ok:choice===correct, correct:correct};
+  note('Decision: '+choice+(S.decision.ok?' (correct)':' (expected: '+correct+')'),'Decision recorded: '+choice,S.decision.ok?'ok':'bad');
+  S.stepDone[S.si]=true; S.finished=true; render();
+}
+
+/* ---- outcome models: simplified, qualitative, not lab-calibrated ---- */
+function mt(label,value,dec,unit,target,ok){ return {label,value,dec,unit,target,ok}; }
+const OUT = {
+  litho(g,nom,M){
+    const tT=M.thickness_target_um||1.0, tTol=M.thickness_tol_um||0.05, cT=M.cd_target_um||1.0, cTol=(M.cd_tol_frac||0.10)*cT;
+    const thickness=tT*Math.sqrt(nom('spin_rpm')/g('spin_rpm'));
+    const sbF=1+0.01*(g('sb_temp')-nom('sb_temp'))+0.002*(g('sb_s')-nom('sb_s'));
+    const pebF=1+0.003*(g('peb_temp')-nom('peb_temp'));
+    const doseEff=(g('dose')/nom('dose'))/sbF*pebF;
+    const devF=1+0.004*(g('dev_s')-nom('dev_s'));
+    const eff=doseEff*devF;
+    const cd=cT*(1+0.8*(eff-1));
+    const focusLoss=Math.abs(g('focus')-nom('focus'));
+    const thickOk=Math.abs(thickness-tT)<=tTol, cdOk=Math.abs(cd-cT)<=cTol;
+    const flags=[];
+    if(!thickOk) flags.push({sev:'major',txt:'Resist thickness '+fmt(thickness)+' µm is outside '+fmt(tT)+' ± '+fmt(tTol)+' µm.',link:'Coater: spin speed and dispense. In the 6D simulator, see STEP 03 Photolithography and its Fault Case (Donut pattern); film thickness also changes reflectivity and focus margin.'});
+    if(nom('dispense_ml')!==undefined && g('dispense_ml')<0.6*nom('dispense_ml')) flags.push({sev:'major',txt:'Too little resist dispensed: incomplete coverage and streaks.',link:'Coater: dispense volume.'});
+    if(nom('spin_s')!==undefined && g('spin_s')<nom('spin_s')-10) flags.push({sev:'minor',txt:'Short spin: film not fully dry or uniform.',link:'Coater: spin time.'});
+    if(!cdOk) flags.push({sev:'major',txt:'Linewidth (space) '+fmt(cd)+' µm is outside '+fmt(cT)+' ± '+fmt(cTol)+' µm.',link:'Check station data in this order: stepper dose, bake temperatures, develop time. Shape alone does not tell which one drifted.'});
+    if(eff<0.85) flags.push({sev:'major',txt:'Under-exposed or under-developed: resist residue (scum) in the openings.',link:'Stepper dose, soft-bake over-temperature, or short develop time.'});
+    if(eff>1.15) flags.push({sev:'major',txt:'Over-exposed or over-developed: openings too wide, resist loss.',link:'Stepper dose, hot post-exposure bake, or long develop time.'});
+    if(focusLoss>0.6) flags.push({sev:'major',txt:'Defocus: sloped sidewalls and soft edges.',link:'Stepper focus. Depth of focus shrinks as numerical aperture rises (Rayleigh).'});
+    if(nom('rinse_s')!==undefined && g('rinse_s')<nom('rinse_s')-20) flags.push({sev:'minor',txt:'Short rinse: developer residue and stains.',link:'Developer: rinse time.'});
+    const reflow=nom('hb_temp')!==undefined && g('hb_temp')>nom('hb_temp')+30;
+    if(reflow) flags.push({sev:'major',txt:'Hard bake too hot: resist flows and rounds the edges.',link:'Hotplate: hard-bake temperature.'});
+    return {type:'litho',thickness,cd,eff,focusLoss,reflow,flags,pass:!flags.some(f=>f.sev==='major'),
+      metrics:[mt('Resist thickness',thickness,2,'µm',fmt(tT)+' ± '+fmt(tTol),thickOk), mt('Space width (CD)',cd,2,'µm',fmt(cT)+' ± '+fmt(cTol),cdOk)]};
+  },
+  etch(g,nom,M){
+    const film=M.film_nm||500;
+    const P=g('rf_power'), pr=g('pressure'), F=g('gas_flow'), t=g('etch_s');
+    const ER=100*(P/150)*Math.pow(F/40,0.3)*Math.pow(pr/50,-0.2);
+    const depth=ER*t/60;
+    const sel=10*Math.sqrt(150/P);
+    const resLeft=Math.max(0,100-(depth/sel)/10);
+    const siLoss=Math.max(0,depth-film)/15;
+    const angle=Math.max(60,Math.min(90,88+0.1*(50-pr)+0.02*(P-150)));
+    const cleared=depth>=film, siOk=siLoss<=10, angOk=angle>=85, resOk=resLeft>=50;
+    const flags=[];
+    if(!cleared) flags.push({sev:'major',txt:'Oxide not cleared: about '+fmt(film-depth,0)+' nm remains in the openings.',link:'Etch time or etch rate (RF power, gas flow, pressure). In the 6D simulator, see STEP 04 Etching and its Fault Case (Edge pattern); the endpoint signal would show late.'});
+    if(!siOk) flags.push({sev:'major',txt:'Over-etch: '+fmt(siLoss,1)+' nm of silicon lost.',link:'Etch time too long; selectivity to silicon is limited.'});
+    if(!angOk) flags.push({sev:'major',txt:'Sloped sidewalls ('+fmt(angle,1)+'°): the etch is not anisotropic enough.',link:'Chamber pressure (high pressure makes the etch more isotropic) or low RF power.'});
+    if(!resOk) flags.push({sev:'major',txt:'Resist mask nearly consumed ('+fmt(resLeft,0)+' % left).',link:'RF power too high lowers selectivity to resist, or etch time too long.'});
+    return {type:'etch',film,depth,siLoss,angle,resLeft,flags,pass:!flags.some(f=>f.sev==='major'),
+      metrics:[mt('Oxide etched',depth,0,'nm','at least '+film,cleared), mt('Silicon lost',siLoss,1,'nm','at most 10',siOk), mt('Sidewall angle',angle,1,'°','at least 85',angOk), mt('Resist left',resLeft,0,'%','at least 50',resOk)]};
+  },
+  implant(g,nom,M){
+    const E=g('energy'), tilt=g('tilt'), ts=g('implant_s'), T=g('rta_temp'), ta=g('rta_s');
+    const area=M.area_cm2||176.7, I=M.beam_ma||1.0, tgt=M.dose_target||1.0;
+    const dose=(I*1e-3*ts)/(1.602e-19*area)/1e15;
+    const Rp=31*Math.pow(E/50,0.9);
+    const chan=tilt<2;
+    const act=Math.max(0.3,Math.min(1,0.5+0.5*(T-800)/200))*Math.max(0.7,Math.min(1,0.7+0.03*ta));
+    const Rs=120/(Math.max(dose,0.001)*act);
+    const xj=Math.max(20,2.4*Rp*(chan?1.3:1)+0.4*(T-1000)+2*(ta-10));
+    const doseOk=Math.abs(dose-tgt)<=0.1*tgt, rsOk=Math.abs(Rs-120)<=20, xjOk=xj<=100;
+    const flags=[];
+    if(!doseOk) flags.push({sev:'major',txt:'Delivered dose '+fmt(dose)+'×10¹⁵ ions/cm² is outside '+fmt(tgt)+' ± '+fmt(0.1*tgt)+'.',link:'Implant time: recompute from Q = I·t / (q·A). In the 6D simulator, see STEP 06 Ion Implantation and its Fault Case (Donut pattern).'});
+    if(!rsOk) flags.push({sev:'major',txt:'Sheet resistance '+fmt(Rs,0)+' Ω/sq is outside 100–140.',link:'Dose (low dose raises resistance) or incomplete activation (anneal too cool or too short).'});
+    if(!xjOk) flags.push({sev:'major',txt:'Junction too deep ('+fmt(xj,0)+' nm).',link:'Implant energy, channeling (tilt too small), or an anneal that is too hot or too long.'});
+    if(chan) flags.push({sev:'major',txt:'Channeling: tilt below 2° sends ions deep along crystal lanes.',link:'Wafer tilt: restore about 7°.'});
+    if(T<900) flags.push({sev:'minor',txt:'Anneal too cool: dopants poorly activated.',link:'Anneal temperature.'});
+    if(T>1100) flags.push({sev:'minor',txt:'Anneal very hot: excess dopant diffusion.',link:'Anneal temperature.'});
+    return {type:'implant',dose,Rp,Rs,xj,chan,act,flags,pass:!flags.some(f=>f.sev==='major'),
+      metrics:[mt('Delivered dose',dose,2,'×10¹⁵ /cm²','1.0 ± 0.1',doseOk), mt('Sheet resistance',Rs,0,'Ω/sq','100 to 140',rsOk), mt('Junction depth',xj,0,'nm','at most 100',xjOk)]};
+  },
+  cvd(g,nom,M){
+    const T=g('dep_temp'), pr=g('pressure'), rf=g('rf_power'), F=g('sih4'), t=g('dep_s');
+    const DR=200*Math.pow(rf/200,0.6)*Math.pow(F/50,0.8)*(1+0.1*(pr-1))*(1+0.0008*(T-350));
+    const th=DR*t/60;
+    const uni=1.5+4*Math.abs(pr-1)+0.01*Math.abs(rf-200);
+    const ri=1.46+0.003*(F-50);
+    const thOk=Math.abs(th-500)<=30, uniOk=uni<=3.0, riOk=Math.abs(ri-1.46)<=0.02;
+    const flags=[];
+    if(!thOk) flags.push({sev:'major',txt:'Film thickness '+fmt(th,0)+' nm is outside 500 ± 30 nm.',link:'Deposition time and rate (temperature, RF power, SiH₄ flow). In the 6D simulator, see STEP 05 Deposition and its Fault Case (Edge pattern).'});
+    if(!uniOk) flags.push({sev:'major',txt:'Non-uniformity '+fmt(uni,1)+' % is above 3 %.',link:'Chamber pressure and RF power change the plasma and gas distribution (often an Edge pattern: in the 6D simulator, see STEP 05 Deposition).'});
+    if(!riOk) flags.push({sev:'major',txt:'Refractive index '+fmt(ri,3)+' is outside 1.46 ± 0.02: the film is '+(ri>1.46?'silicon-rich':'silicon-poor')+'.',link:'Gas ratio: SiH₄ flow.'});
+    if(T<300) flags.push({sev:'major',txt:'Low deposition temperature: porous, low-density film with a high wet-etch rate.',link:'Deposition temperature.'});
+    return {type:'cvd',th,uni,ri,flags,pass:!flags.some(f=>f.sev==='major'),
+      metrics:[mt('Thickness',th,0,'nm','500 ± 30',thOk), mt('Non-uniformity',uni,1,'%','at most 3.0',uniOk), mt('Refractive index',ri,3,'','1.46 ± 0.02',riOk)]};
+  },
+  metal(g,nom,M){
+    const cl=g('clean_s'), tp=g('tgt_s'), ar=g('ar_flow'), pr=g('pressure'), kw=g('dc_kw'), T=g('sub_temp'), t=g('dep_s');
+    const DR=600*(kw/5)*(1-0.03*(pr-3));
+    const th=DR*t/60;
+    const rho=2.9*(1+0.06*(pr-3))*(1+0.0006*(200-T))*(tp<20?1.05:1);
+    const Rs=rho*10/th*1000;
+    const uni=2+1.0*Math.abs(pr-3)+0.05*Math.abs(ar-30);
+    const thOk=Math.abs(th-1000)<=50, rsOk=Rs<=33, uniOk=uni<=4;
+    const hillock=T>350;
+  const Rc=1+0.05*Math.max(0,30-cl), rcOk=Rc<=1.5;
+    const flags=[];
+    if(!thOk) flags.push({sev:'major',txt:'Film thickness '+fmt(th,0)+' nm is outside 1000 ± 50 nm.',link:'Deposition time and rate (DC power, pressure). In the 6D simulator, see STEP 07 Metallization and its Fault Case (Edge pattern).'});
+    if(!rsOk) flags.push({sev:'major',txt:'Sheet resistance '+fmt(Rs,1)+' mΩ/sq is above 33.',link:'Thin film, high pressure (trapped gas), a cool substrate or an unconditioned target all raise sheet resistance. A dirty interface does not: it shows up as contact resistance.'});
+    if(!uniOk) flags.push({sev:'major',txt:'Non-uniformity '+fmt(uni,1)+' % is above 4 %.',link:'Process pressure and argon flow change the sputter distribution.'});
+    if(cl<20) flags.push({sev:'major',txt:'Wafer pre-clean too short: native oxide left at the interface, with poor adhesion and high contact resistance (about '+fmt(Rc,2)+' × standard, an illustrative training value). Sheet resistance of the film does not show this.',link:'Wafer pre-clean time (argon sputter etch with the shutter open).'});
+  if(tp<20) flags.push({sev:'minor',txt:'Target pre-sputter too short: oxide and contamination on the target are not removed, so the film picks up impurities and its sheet resistance rises a little (illustrative size).',link:'Target pre-sputter time (shutter closed).'});
+    if(hillock) flags.push({sev:'major',txt:'Substrate too hot: aluminium hillocks (surface bumps) can short layers.',link:'Substrate temperature.'});
+    return {type:'metal',th,Rs,Rc,uni,hillock,cleanShort:cl<20,flags,pass:!flags.some(f=>f.sev==='major'),
+      metrics:[mt('Thickness',th,0,'nm','1000 ± 50',thOk), mt('Sheet resistance',Rs,1,'mΩ/sq','at most 33',rsOk), mt('Non-uniformity',uni,1,'%','at most 4',uniOk), mt('Contact resistance (relative, illustrative)',Rc,2,'× standard','at most 1.5 (training value)',rcOk)]};
+  }
+};
+function modelType(){ return (R.model&&R.model.type)||'litho'; }
+function computeOutcome(){
+  const type=modelType(); const fn=OUT[type];
+  if(!fn) return {unavailable:true,flags:[],metrics:[],pass:true};
+  for(const id of NEED[type]) if(nom(id)===undefined) return {unavailable:true,flags:[],metrics:[],pass:true};
+  return fn(id=>pv(id), nom, R.model||{});
+}
+
+function scores(){
+  const W=R.weights;
+  const orderS=Math.max(0,1-0.15*S.orderErr)*W.order;
+  const safetyS=Math.max(0,1-0.34*S.safetyViol)*W.safety;
+  const grades=[];
+  for(const si in S.com) for(const id in S.com[si]) grades.push(S.com[si][id].g);
+  if(S.decision) grades.push(S.decision.ok?1:0);
+  const avg=grades.length?grades.reduce((a,b)=>a+b,0)/grades.length:0;
+  const settingsS=avg*W.settings;
+  let total=orderS+safetyS+settingsS;
+  const failedWafer=S.outcome && !S.outcome.unavailable && !S.outcome.pass;
+  if(failedWafer) total=Math.min(total,84);
+  const band= total>=85?'Competent':(total>=70?'Needs coaching':'Repeat the procedure');
+  return {orderS,safetyS,settingsS,total,band,failedWafer};
+}
+
+/* ------------------------------ drawing ------------------------------ */
+const BG='#55565C', OX='#7D8FD6', RES='#D9A441', SI='#8d9098';
+const rect=(x,y,w,h,f,extra)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+f+'"'+(extra||'')+'/>';
+const txt=(x,y,s,fill,sz,anchor)=>'<text x="'+x+'" y="'+y+'" fill="'+(fill||'#F7F7F8')+'" font-size="'+((sz||11)+2)+'" text-anchor="'+(anchor||'start')+'">'+esc(s)+'</text>';
+const OPEN_X=[30,130,230,330], OPEN_W=40;
+
+const DRAW = {
+  litho(o,done){
+    const base=140, subH=26;
+    let h='<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#2FE3C9" stroke-width="2"/></pattern></defs>';
+    h+=rect(10,base,400,subH,SI)+txt(14,base+subH-8,'Silicon wafer');
+    const coated=done('coat'), pitch=100, firstX=30;
+    let thickPx=50;
+    if(coated && !o.unavailable) thickPx=Math.max(14,Math.min(100,o.thickness*50));
+    const rx=(o.reflow&&done('hb'))?9:1;
+    const developed=done('dev'), exposed=done('expose');
+    const spacePx=o.unavailable?40:Math.max(8,Math.min(90,o.cd*40));
+    if(coated){
+      if(!developed){
+        h+=rect(10,base-thickPx,400,thickPx,RES,' opacity=".92"');
+        if(exposed) for(let i=0;i<4;i++) h+=rect(firstX+i*pitch,base-thickPx,spacePx,thickPx,'url(#hatch)');
+      } else {
+        let start=10;
+        for(let i=0;i<4;i++){
+          const sx=firstX+i*pitch;
+          if(sx>start) h+=rect(start,base-thickPx,sx-start,thickPx,RES,' rx="'+rx+'"');
+          start=sx+spacePx;
+        }
+        if(410>start) h+=rect(start,base-thickPx,410-start,thickPx,RES,' rx="'+rx+'"');
+        if(!o.unavailable && o.eff<0.85) h+=txt(210,base-thickPx-8,'residue in openings','#FF6B61',11,'middle');
+      }
+    } else h+=txt(210,80,'Bare primed wafer. Resist is applied at the coater.','#C7C8CC',12,'middle');
+    return h;
+  },
+  etch(o,done){
+    const base=140, ppx=0.08;
+    let h=rect(10,base,400,26,SI)+txt(14,base+18,'Silicon wafer');
+    if(o.unavailable) return h;
+    const filmpx=o.film*ppx, etched=done('etch'), stripped=done('strip');
+    const dx=filmpx*Math.tan((90-o.angle)*Math.PI/180);
+    const resH=40*(etched?o.resLeft/100:1);
+    const spans=[]; let start=10;
+    OPEN_X.forEach(x=>{ spans.push([start,x]); start=x+OPEN_W; }); spans.push([start,410]);
+    if(!etched){
+      h+=rect(10,base-filmpx,400,filmpx,OX);
+    } else {
+      spans.forEach(([a,b],i)=>{
+        const tl=a+(a>10?dx:0), tr=b-(b<410?dx:0);
+        if(tr>tl) h+='<polygon points="'+a+','+base+' '+b+','+base+' '+tr+','+(base-filmpx)+' '+tl+','+(base-filmpx)+'" fill="'+OX+'"/>';
+      });
+      const rem=Math.max(0,o.film-o.depth)*ppx, si=Math.min(o.siLoss*0.8,20);
+      OPEN_X.forEach(x=>{ if(rem>0) h+=rect(x,base-rem,OPEN_W,rem,OX); if(si>0) h+=rect(x,base,OPEN_W,si,BG); });
+    }
+    if(!stripped) spans.forEach(([a,b])=>{ if(b-a>2) h+=rect(a+1,base-filmpx-resH,b-a-2,resH,RES); });
+    else h+=txt(210,60,'Resist stripped','#C7C8CC',12,'middle');
+    return h;
+  },
+  implant(o,done){
+    const base=100;
+    let h='<defs><pattern id="dmg" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#FF6B61" stroke-width="2"/></pattern></defs>';
+    h+=rect(10,base,400,66,SI)+txt(14,base+60,'Silicon wafer');
+    h+=rect(10,base-6,400,6,OX);
+    if(o.unavailable) return h;
+    const implanted=done('implant'), annealed=done('anneal');
+    const spans=[]; let start=10;
+    OPEN_X.forEach(x=>{ spans.push([start,x]); start=x+OPEN_W; }); spans.push([start,410]);
+    if(!annealed) spans.forEach(([a,b])=>{ if(b-a>2) h+=rect(a+1,base-46,b-a-2,40,RES); });
+    if(implanted && !annealed) OPEN_X.forEach(x=>{ h+=rect(x,base,OPEN_W,Math.min(60,o.Rp*2*0.6),'url(#dmg)'); });
+    if(annealed){
+      const d=Math.min(62,o.xj*0.6), lat=d*0.3;
+      OPEN_X.forEach(x=>{ h+=rect(x-lat,base,OPEN_W+2*lat,d,'#2FE3C9',' rx="10" opacity=".85"'); });
+      if(S.measured) h+=txt(210,base+d+14,'Junction depth '+fmt(o.xj,0)+' nm','#F7F7F8',11,'middle');
+    }
+    if(implanted && !annealed) h+=txt(210,base+56,'Crystal damage (not yet activated)','#FF6B61',11,'middle');
+    return h;
+  },
+  cvd(o,done){
+    const base=140;
+    let h=rect(10,base,400,26,SI)+txt(14,base+18,'Silicon wafer');
+    if(o.unavailable) return h;
+    if(!done('dep')){ return h+txt(210,80,'Bare wafer. Oxide is deposited in the PECVD chamber.','#C7C8CC',12,'middle'); }
+    const tpx=Math.max(8,Math.min(110,o.th*0.08)), u=Math.min(0.3,o.uni/100*4);
+    let pts=[[10,base]], i;
+    for(i=0;i<=20;i++){ const x=10+i*20, k=1-Math.pow((x-210)/200,2); pts.push([x,base-tpx*(1+u*k)]); }
+    pts.push([410,base]);
+    h+='<polygon points="'+pts.map(p=>p[0]+','+fmt(p[1],1)).join(' ')+'" fill="'+OX+'"/>';
+    h+=txt(210,base-tpx*(1+u)-8,'Oxide film','#F7F7F8',11,'middle');
+    return h;
+  },
+  metal(o,done){
+    const base=140;
+    let h=rect(10,base,400,26,SI)+txt(14,base+18,'Silicon wafer');
+    h+=rect(10,base-6,400,6,'#4a4d57')+txt(414,base-1,'Ti/TiN barrier','#C7C8CC',10,'end');
+    if(o.unavailable) return h;
+    if(!done('dep')) return h+txt(210,80,'Barrier in place. Aluminium is sputtered next.','#C7C8CC',12,'middle');
+    const tpx=Math.max(8,Math.min(110,o.th*0.08)), top=base-6-tpx;
+    h+=rect(10,top,400,tpx,'#C7C8CC');
+    if(o.hillock) for(let x=40;x<410;x+=45) h+='<polygon points="'+x+','+top+' '+(x+10)+','+(top-14)+' '+(x+20)+','+top+'" fill="#C7C8CC"/>';
+    h+=txt(210,top+tpx/2+4,'Aluminium','#48494E',12,'middle');
+    if(o.cleanShort){ h+=rect(10,base-9,400,3,'#E8A33D')+txt(414,base-12,'Native oxide at the interface','#FFC0BA',10,'end'); }
+    return h;
+  }
+};
+
+/* ====== outcome models (simplified, qualitative) ====== */
+OUT.implant=function(g,nom,M){
+  const E=g('energy'), tilt=g('tilt'), ts=g('implant_s'), T=g('rta_temp'), ta=g('rta_s');
+  const area=M.area_cm2||176.7, I=M.beam_ma||1.0, tgt=M.dose_target||1.0;
+  const dose=(I*1e-3*ts)/(1.602e-19*area)/1e15;
+  const Rp=31*Math.pow(E/50,0.9);
+  const chan=tilt<2;
+  const act=Math.max(0.3,Math.min(1,0.5+0.5*(T-800)/200))*Math.max(0.7,Math.min(1,0.7+0.03*ta));
+  const Rs=120/(Math.max(dose,0.001)*act);
+  const RsT=120/tgt;
+  const xj=Math.max(20,2.4*Rp*(chan?1.3:1)+0.4*(T-1000)+2*(ta-10));
+  const doseOk=Math.abs(dose-tgt)<=0.1*tgt, rsOk=Math.abs(Rs-RsT)<=0.17*RsT, xjOk=xj<=100;
+  const flags=[];
+  if(!doseOk) flags.push({sev:'major',txt:'Delivered dose '+fmt(dose)+'×10¹⁵ ions/cm² is outside '+fmt(tgt)+' ± '+fmt(0.1*tgt)+'.',link:'Implant time: recompute from Q = I·t / (q·A). In the 6D simulator, see STEP 06 Ion Implantation and its Fault Case (Donut pattern).'});
+  if(!rsOk) flags.push({sev:'major',txt:'Sheet resistance '+fmt(Rs,0)+' Ω/sq is outside '+fmt(0.83*RsT,0)+'–'+fmt(1.17*RsT,0)+'.',link:'Dose (low dose raises resistance) or incomplete activation (anneal too cool or too short).'});
+  if(!xjOk) flags.push({sev:'major',txt:'Junction too deep ('+fmt(xj,0)+' nm).',link:'Implant energy, channeling (tilt too small), or an anneal that is too hot or too long.'});
+  if(chan) flags.push({sev:'major',txt:'Channeling: tilt below 2° sends ions deep along crystal lanes.',link:'Wafer tilt: restore about 7°.'});
+  if(T<900) flags.push({sev:'minor',txt:'Anneal too cool: dopants poorly activated.',link:'Anneal temperature.'});
+  if(T>1100) flags.push({sev:'minor',txt:'Anneal very hot: excess dopant diffusion.',link:'Anneal temperature.'});
+  return {type:'implant',dose,Rp,Rs,xj,chan,act,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Delivered dose',dose,2,'×10¹⁵ /cm²',fmt(tgt)+' ± '+fmt(0.1*tgt),doseOk), mt('Sheet resistance',Rs,0,'Ω/sq',fmt(0.83*RsT,0)+' to '+fmt(1.17*RsT,0),rsOk), mt('Junction depth',xj,0,'nm','at most 100',xjOk)]};
+};
+OUT.cvd=function(g,nom,M){
+  const tgt=M.target_nm||500, tol=0.06*tgt;
+  const T=g('dep_temp'), pr=g('pressure'), rf=g('rf_power'), F=g('sih4'), t=g('dep_s');
+  const DR=200*Math.pow(rf/200,0.6)*Math.pow(F/50,0.8)*(1+0.1*(pr-1))*(1+0.0008*(T-350));
+  const th=DR*t/60;
+  const uni=1.5+4*Math.abs(pr-1)+0.01*Math.abs(rf-200);
+  const ri=1.46+0.003*(F-50);
+  const thOk=Math.abs(th-tgt)<=tol, uniOk=uni<=3.0, riOk=Math.abs(ri-1.46)<=0.02;
+  const flags=[];
+  if(!thOk) flags.push({sev:'major',txt:'Film thickness '+fmt(th,0)+' nm is outside '+fmt(tgt,0)+' ± '+fmt(tol,0)+' nm.',link:'Deposition time and rate (temperature, RF power, SiH₄ flow). In the 6D simulator, see STEP 05 Deposition and its Fault Case (Edge pattern).'});
+  if(!uniOk) flags.push({sev:'major',txt:'Non-uniformity '+fmt(uni,1)+' % is above 3 %.',link:'Chamber pressure and RF power change the plasma and gas distribution (often an Edge pattern: in the 6D simulator, see STEP 05 Deposition).'});
+  if(!riOk) flags.push({sev:'major',txt:'Refractive index '+fmt(ri,3)+' is outside 1.46 ± 0.02: the film is '+(ri>1.46?'silicon-rich':'silicon-poor')+'.',link:'Gas ratio: SiH₄ flow.'});
+  if(T<300) flags.push({sev:'major',txt:'Low deposition temperature: porous, low-density film with a high wet-etch rate.',link:'Deposition temperature.'});
+  return {type:'cvd',th,uni,ri,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Thickness',th,0,'nm',fmt(tgt,0)+' ± '+fmt(tol,0),thOk), mt('Non-uniformity',uni,1,'%','at most 3.0',uniOk), mt('Refractive index',ri,3,'','1.46 ± 0.02',riOk)]};
+};
+OUT.metal=function(g,nom,M){
+  const tgt=M.target_nm||1000, tol=0.05*tgt, rsLim=33*1000/tgt;
+  const cl=g('clean_s'), tp=g('tgt_s'), ar=g('ar_flow'), pr=g('pressure'), kw=g('dc_kw'), T=g('sub_temp'), t=g('dep_s');
+  const DR=600*(kw/5)*(1-0.03*(pr-3));
+  const th=DR*t/60;
+  const rho=2.9*(1+0.06*(pr-3))*(1+0.0006*(200-T))*(tp<20?1.05:1);
+  const Rs=rho*10/th*1000;
+  const uni=2+1.0*Math.abs(pr-3)+0.05*Math.abs(ar-30);
+  const thOk=Math.abs(th-tgt)<=tol, rsOk=Rs<=rsLim, uniOk=uni<=4;
+  const hillock=T>350;
+  const Rc=1+0.05*Math.max(0,30-cl), rcOk=Rc<=1.5;
+  const flags=[];
+  if(!thOk) flags.push({sev:'major',txt:'Film thickness '+fmt(th,0)+' nm is outside '+fmt(tgt,0)+' ± '+fmt(tol,0)+' nm.',link:'Deposition time and rate (DC power, pressure). In the 6D simulator, see STEP 07 Metallization and its Fault Case (Edge pattern).'});
+  if(!rsOk) flags.push({sev:'major',txt:'Sheet resistance '+fmt(Rs,1)+' mΩ/sq is above '+fmt(rsLim,1)+'.',link:'Thin film, high pressure (trapped gas), a cool substrate or an unconditioned target all raise sheet resistance. A dirty interface does not: it shows up as contact resistance.'});
+  if(!uniOk) flags.push({sev:'major',txt:'Non-uniformity '+fmt(uni,1)+' % is above 4 %.',link:'Process pressure and argon flow change the sputter distribution.'});
+  if(cl<20) flags.push({sev:'major',txt:'Wafer pre-clean too short: native oxide left at the interface, with poor adhesion and high contact resistance (about '+fmt(Rc,2)+' × standard, an illustrative training value). Sheet resistance of the film does not show this.',link:'Wafer pre-clean time (argon sputter etch with the shutter open).'});
+  if(tp<20) flags.push({sev:'minor',txt:'Target pre-sputter too short: oxide and contamination on the target are not removed, so the film picks up impurities and its sheet resistance rises a little (illustrative size).',link:'Target pre-sputter time (shutter closed).'});
+  if(hillock) flags.push({sev:'major',txt:'Substrate too hot: aluminium hillocks (surface bumps) can short layers.',link:'Substrate temperature.'});
+  return {type:'metal',th,Rs,Rc,uni,hillock,cleanShort:cl<20,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Thickness',th,0,'nm',fmt(tgt,0)+' ± '+fmt(tol,0),thOk), mt('Sheet resistance',Rs,1,'mΩ/sq','at most '+fmt(rsLim,1),rsOk), mt('Non-uniformity',uni,1,'%','at most 4',uniOk), mt('Contact resistance (relative, illustrative)',Rc,2,'× standard','at most 1.5 (training value)',rcOk)]};
+};
+OUT.diebond=function(g,nom,M){
+  const dN=nom('dispense_ms'),FN=nom('bond_force'),TN=nom('cure_temp'),tN=nom('cure_min');
+  const d=g('dispense_ms'),F=g('bond_force'),T=g('cure_temp'),t=g('cure_min');
+  const blt=25*Math.pow(d/dN,0.8)*Math.pow(FN/F,0.5);
+  const voids=1.5+0.09*Math.max(0,(1-F/FN)*100);
+  const cf=(t/tN)*Math.exp((T-TN)/20);
+  const shear=3.0*Math.min(1,cf)*(1-0.03*Math.max(0,voids-3));
+  const crack=F>1.8*FN, over=d>1.6*dN, under=d<0.5*dN;
+  const bltOk=Math.abs(blt-25)<=5, voOk=voids<=5, shOk=shear>=2.4;
+  const flags=[];
+  if(!bltOk) flags.push({sev:'major',txt:'Bond-line thickness '+fmt(blt,1)+' µm is outside 25 ± 5 µm.',link:'Epoxy dispense time (volume) and bond force. In the 6D simulator, see MODULE 01 Die Bonding and its Fault Case (Local Cluster pattern).'});
+  if(!voOk) flags.push({sev:'major',txt:'Void area '+fmt(voids,1)+' % is above 5 %: air trapped under the die.',link:'Bond force too low to press out air.'});
+  if(!shOk) flags.push({sev:'major',txt:'Die shear strength '+fmt(shear,2)+' kgf is below 2.4: weak bond.',link:'Cure temperature and time (under-cure), or voids.'});
+  if(crack) flags.push({sev:'major',txt:'Die crack risk: bond force far above the recipe.',link:'Bond force.'});
+  if(over) flags.push({sev:'major',txt:'Too much epoxy: squeeze-out onto the die top and bond pads.',link:'Epoxy dispense time. Contaminated pads cause wire bonding failures later.'});
+  if(under) flags.push({sev:'major',txt:'Too little epoxy: incomplete fillet around the die.',link:'Epoxy dispense time.'});
+  if(cf>1.6) flags.push({sev:'minor',txt:'Over-cured epoxy: brittle bond.',link:'Cure temperature and time.'});
+  return {type:'diebond',blt,voids,shear,cf,crack,over,under,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Bond-line thickness',blt,1,'µm','25 ± 5',bltOk), mt('Void area',voids,1,'%','at most 5',voOk), mt('Die shear strength',shear,2,'kgf','at least 2.4',shOk)]};
+};
+OUT.wirebond=function(g,nom,M){
+  const dia=M.wire_um||25, k=Math.pow(dia/25,2);
+  const Fn=nom('bond_force'),Pn=nom('us_power'),tn=nom('bond_time'),Tn=nom('stage_temp'),Ln=nom('loop_height');
+  const F=g('bond_force'),P=g('us_power'),t=g('bond_time'),T=g('stage_temp'),L=g('loop_height');
+  const Q=Math.pow(F/Fn,0.4)*Math.pow(P/Pn,0.5)*Math.pow(t/tn,0.3)*(1+0.004*(T-Tn));
+  const Rk=(F/Fn)*(P/Pn);
+  const shear=45*k*Q, shearMin=0.8*45*k;
+  const pull=9*k*Math.pow(Math.max(Q,0.01),0.7)*(1-0.3*Math.abs(L-Ln)/Ln), pullMin=0.67*9*k;
+  const ball=2.4*dia*Math.pow(Rk,0.25), bLo=2.2*dia, bHi=2.8*dia;
+  const loopOk=Math.abs(L-Ln)<=0.2*Ln;
+  const shOk=shear>=shearMin, puOk=pull>=pullMin, baOk=ball>=bLo&&ball<=bHi;
+  const flags=[];
+  if(!shOk) flags.push({sev:'major',txt:'Ball shear '+fmt(shear,1)+' gf is below '+fmt(shearMin,1)+': weak bond, non-stick or lift-off risk.',link:'Bond force, ultrasonic power, time and stage temperature. In the 6D simulator, see MODULE 02 Wire Bonding and its Fault Case (Scratch pattern).'});
+  if(!puOk) flags.push({sev:'major',txt:'Wire pull '+fmt(pull,1)+' gf is below '+fmt(pullMin,1)+'.',link:'Bond quality, or a loop height far from the recipe.'});
+  if(!baOk) flags.push({sev:'major',txt:'Ball diameter '+fmt(ball,0)+' µm is outside '+fmt(bLo,0)+'–'+fmt(bHi,0)+' µm'+(ball>bHi?': ball flattened, pad cratering risk (cracks the silicon under the pad).':': ball too small.'),link:'Bond force and ultrasonic power together.'});
+  if(!loopOk) flags.push({sev:'major',txt:'Loop height '+fmt(L,0)+' µm is outside '+fmt(Ln,0)+' ± 20 %: '+(L<Ln?'a low loop can touch the die edge (short).':'a high loop is easily swept during molding.'),link:'Loop height setting. High loops matter again at Molding (wire sweep).'});
+  if(T<Tn-35) flags.push({sev:'major',txt:'Stage too cool: non-stick on pad.',link:'Stage temperature.'});
+  if(T>Tn+60) flags.push({sev:'major',txt:'Stage too hot: wire and lead oxidation.',link:'Stage temperature.'});
+  return {type:'wirebond',dia,shear,shearMin,pull,pullMin,ball,Rk,L,Ln,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Ball shear',shear,1,'gf','at least '+fmt(shearMin,1),shOk), mt('Wire pull',pull,1,'gf','at least '+fmt(pullMin,1),puOk), mt('Ball diameter',ball,0,'µm',fmt(bLo,0)+' to '+fmt(bHi,0),baOk), mt('Loop height',L,0,'µm',fmt(Ln,0)+' ± 20 %',loopOk)]};
+};
+OUT.mold=function(g,nom,M){
+  const Tn=nom('mold_temp'),Pn=nom('pressure'),tn=nom('transfer_s'),cn=nom('cure_s');
+  const T=g('mold_temp'),P=g('pressure'),t=g('transfer_s'),c=g('cure_s');
+  const gel=30*(tn/12)*Math.exp(-(T-Tn)/20), fillMax=0.8*gel;
+  let fill=t<=fillMax?100:100*fillMax/t;
+  if(P<0.5*Pn) fill*=P/(0.5*Pn);
+  const sweep=2.5*Math.pow(tn/t,1.2)*Math.pow(P/Pn,0.5);
+  const voids=0.8+1.0*Math.max(0,Pn-P)*(7/Pn)+0.2*Math.max(0,0.67*tn-t);
+  const cure=100*Math.min(1,(c/cn)*Math.exp((T-Tn)/25));
+  const fiOk=fill>=99, swOk=sweep<=4, voOk=voids<=3, cuOk=cure>=90;
+  const flags=[];
+  if(!fiOk) flags.push({sev:'major',txt:'Incomplete fill (short shot): only '+fmt(fill,0)+' % of the cavity filled.',link:'Transfer time too long for the gel time at this temperature (a hot mold gels early), or pressure too low. In the 6D simulator, see MODULE 03 Molding and its Fault Case (Center pattern).'});
+  if(!swOk) flags.push({sev:'major',txt:'Wire sweep '+fmt(sweep,1)+' % is above 4 %.',link:'Flow too fast or too forceful: short transfer time or high pressure. Loop height from Wire Bonding also matters.'});
+  if(!voOk) flags.push({sev:'major',txt:'Void area '+fmt(voids,1)+' % is above 3 %: air trapped in the compound.',link:'Pressure too low or transfer too fast.'});
+  if(!cuOk) flags.push({sev:'major',txt:'Cure degree '+fmt(cure,0)+' % is below 90 %: under-cured, soft package.',link:'Mold temperature and cure time.'});
+  if(c>1.6*cn) flags.push({sev:'minor',txt:'Cure time far longer than the datasheet: wasted cycle time.',link:'Cure time.'});
+  return {type:'mold',fill,sweep,voids,cure,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Cavity fill',fill,0,'%','at least 99',fiOk), mt('Wire sweep',sweep,1,'%','at most 4',swOk), mt('Void area',voids,1,'%','at most 3',voOk), mt('Cure degree',cure,0,'%','at least 90',cuOk)]};
+};
+OUT.saw=function(g,nom,M){
+  const sn=nom('spindle_krpm'),fn=nom('feed_mms'),cn=nom('coolant_lpm'),dn=nom('cut_depth_um');
+  const s=g('spindle_krpm'),f=g('feed_mms'),c=g('coolant_lpm'),d=g('cut_depth_um');
+  const chip=15*Math.pow(f/fn,0.8)*Math.pow(sn/s,0.6)*Math.pow(cn/c,0.3);
+  const scratched=Math.max(0,Math.round(10*(0.8-c/cn)));
+  const incomplete=d<0.4*dn, tapeThrough=d>2*dn;
+  const chOk=chip<=25, deOk=!incomplete&&!tapeThrough, scOk=scratched===0;
+  const flags=[];
+  if(!chOk) flags.push({sev:'major',txt:'Edge chipping '+fmt(chip,0)+' µm is above 25 µm.',link:'Feed rate too high, spindle speed too low, or too little coolant.'});
+  if(incomplete) flags.push({sev:'major',txt:'Incomplete cut: the blade does not reach through the package, so units stay joined.',link:'Cut depth.'});
+  if(tapeThrough) flags.push({sev:'major',txt:'Tape cut through: units shift and scatter.',link:'Cut depth.'});
+  if(!scOk) flags.push({sev:'major',txt:scratched+' of 20 units scratched: debris dragged across the surface.',link:'Coolant flow too low. MODULE 04 Saw/Dicing gives a Scratch pattern, the same shape as MODULE 02 Wire Bonding; in the 6D simulator only station data tells them apart.'});
+  return {type:'saw',chip,scratched,incomplete,tapeThrough,depth:d,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Edge chipping',chip,0,'µm','at most 25',chOk), mt('Cut depth into tape',d,0,'µm',fmt(0.4*dn,0)+' to '+fmt(2*dn,0),deOk), mt('Scratched units',scratched,0,'of 20','none',scOk)]};
+};
+OUT.test=function(g,nom,M){
+  const Vn=nom('vdd'),Tn=nom('test_temp'),tn=nom('test_ms'),Fn=nom('contact_gf');
+  const V=g('vdd'),T=g('test_temp'),t=g('test_ms'),F=g('contact_gf');
+  const vr=V/Vn; let ff=0; const flags=[];
+  if(vr<0.9){ ff+=3; flags.push({sev:'major',txt:'Supply voltage too low: marginal good units fail.',link:'Supply voltage.'}); }
+  else if(vr<0.95){ ff+=1; flags.push({sev:'major',txt:'Supply voltage slightly low: a marginal good unit fails.',link:'Supply voltage.'}); }
+  if(vr>1.15){ ff+=2; flags.push({sev:'major',txt:'Over-voltage stresses and damages good units.',link:'Supply voltage.'}); }
+  if(F<0.67*Fn){ const n=Math.ceil((0.67*Fn-F)/(0.1*Fn)); ff+=n; flags.push({sev:'major',txt:'Poor socket contact: '+n+' good unit(s) fail as false opens.',link:'Socket contact force and pin condition.'}); }
+  if(T>Tn+15){ ff+=2; flags.push({sev:'major',txt:'Test too hot: good units fail the speed test.',link:'Test temperature.'}); }
+  ff=Math.min(16,ff);
+  const esc=[false,false,t<0.6*tn,T<Tn-15];
+  if(esc[2]) flags.push({sev:'major',txt:'Test time too short: the leakage defect is not detected and escapes.',link:'Test time per unit. Escapes are the costly error: a bad unit ships.'});
+  if(esc[3]) flags.push({sev:'major',txt:'Test too cool for this condition: the slow unit passes and escapes.',link:'Test temperature.'});
+  const escapes=esc.filter(Boolean).length, caught=4-escapes;
+  const rep=((16-ff)+escapes)/20*100;
+  const units=[]; for(let i=0;i<4;i++) units.push(esc[i]?'escape':'caught');
+  for(let i=0;i<16;i++) units.push(i<ff?'falsefail':'good');
+  return {type:'test',units,ff,escapes,caught,rep,flags,pass:!flags.some(f=>f.sev==='major'),
+    metrics:[mt('Defective units caught',caught,0,'of 4','4 of 4',caught===4), mt('Good units wrongly failed',ff,0,'of 16','none',ff===0), mt('Reported yield',rep,0,'%','80 (true yield)',Math.abs(rep-80)<0.5)]};
+};
+
+/* ====== drawings for the back-end processes ====== */
+DRAW.diebond=function(o,done){
+  const base=140;
+  let h=rect(10,base,400,20,'#B87333')+txt(14,base+15,'Lead frame pad','#F7F7F8',11);
+  if(o.unavailable) return h;
+  if(!done('bond')) return h+txt(210,80,'Clean pad. Epoxy and die are placed at the die bonder.','#C7C8CC',12,'middle');
+  const bp=Math.max(3,Math.min(40,o.blt*0.5)), cured=done('cure'), ec=cured?'#9EA2AB':'#C9CCD3';
+  h+=rect(110,base-bp,200,bp,ec);
+  const n=Math.min(10,Math.round(o.voids*2)), vx=[130,155,180,205,230,255,280,140,215,265];
+  for(let i=0;i<n;i++) h+='<circle cx="'+vx[i]+'" cy="'+(base-bp/2)+'" r="'+Math.min(3.5,Math.max(1.5,bp/3))+'" fill="#55565C"/>';
+  h+=rect(120,base-bp-34,180,34,'#5B4A86');
+  h+='<polygon points="110,'+base+' 120,'+base+' 120,'+(base-bp)+'" fill="'+ec+'"/><polygon points="310,'+base+' 300,'+base+' 300,'+(base-bp)+'" fill="'+ec+'"/>';
+  h+=txt(210,base-bp-14,'Die','#F7F7F8',12,'middle')+txt(318,base-bp/2+4,'Epoxy','#F7F7F8',11);
+  if(o.over) h+=rect(190,base-bp-39,40,5,ec)+txt(210,base-bp-45,'epoxy on die top','#FF6B61',11,'middle');
+  if(cured) h+=txt(14,28,'Epoxy cured','#7FCE7A',12);
+  if(S.measured) h+=txt(14,48,'Bond line '+fmt(o.blt,1)+' µm · voids '+fmt(o.voids,1)+' %','#F7F7F8',11);
+  return h;
+};
+DRAW.wirebond=function(o,done){
+  const base=140;
+  let h=rect(30,base,230,14,'#B87333')+rect(300,base-8,110,10,'#B87333')+txt(310,base+14,'Lead finger','#F7F7F8',11);
+  h+=rect(60,base-40,170,40,'#5B4A86')+txt(145,base-14,'Die','#F7F7F8',12,'middle')+rect(75,base-44,32,4,'#D9A441');
+  if(o.unavailable) return h;
+  if(!done('bond')) return h+txt(210,50,'Die attached. Wires are bonded at the wire bonder.','#C7C8CC',12,'middle');
+  const Hpx=Math.min(75,o.L*0.27), r=Math.max(4,Math.min(12,o.ball*0.11));
+  h+='<path d="M91 '+(base-44)+' Q 200 '+(78-2*Hpx+0)+' 335 '+(base-9)+'" fill="none" stroke="#D9A441" stroke-width="2"/>';
+  h+='<circle cx="91" cy="'+(base-48)+'" r="'+r+'" fill="#D9A441"/><polygon points="327,'+(base-9)+' 343,'+(base-9)+' 335,'+(base-14)+'" fill="#D9A441"/>';
+  h+=txt(210,30,'Gold wire bonded','#7FCE7A',12,'middle');
+  if(S.measured) h+=txt(210,50,'Ball '+fmt(o.ball,0)+' µm · loop '+fmt(o.L,0)+' µm','#F7F7F8',11,'middle');
+  return h;
+};
+DRAW.mold=function(o,done){
+  const base=140;
+  let h=rect(40,base,340,10,'#B87333')+rect(150,base-34,120,34,'#5B4A86')+txt(210,base-14,'Die','#F7F7F8',12,'middle');
+  const wires=(dx)=>'<path d="M165 '+(base-34)+' Q '+(125+dx)+' 60 85 '+(base-2)+'" fill="none" stroke="#D9A441" stroke-width="2"/><path d="M255 '+(base-34)+' Q '+(295+dx)+' 60 335 '+(base-2)+'" fill="none" stroke="#D9A441" stroke-width="2"/>';
+  if(o.unavailable) return h;
+  if(!done('press')) return h+wires(0)+txt(210,36,'Wire-bonded strip, before molding','#C7C8CC',12,'middle');
+  const w=360*Math.max(0,Math.min(100,o.fill))/100;
+  h+='<rect x="30" y="50" width="360" height="100" fill="none" stroke="#797A80" stroke-dasharray="4 4"/>';
+  if(w>0) h+=rect(30,50,w,100,'#2A2B30',' opacity=".92"');
+  if(o.fill<99) h+=txt(30+w+(390-30-w)/2,104,'unfilled','#FF6B61',12,'middle');
+  const n=Math.min(12,Math.round(o.voids*3)), vp=[[60,70],[90,125],[130,75],[175,120],[215,70],[250,125],[290,80],[325,120],[355,72],[110,100],[270,100],[200,95]];
+  for(let i=0;i<n;i++) if(vp[i][0]<30+w) h+='<circle cx="'+vp[i][0]+'" cy="'+vp[i][1]+'" r="4" fill="#9a9ba1"/>';
+  h+=rect(150,base-34,120,34,'#9B87D6',' opacity=".75"');
+  h+=wires(Math.min(60,o.sweep*5));
+  h+=txt(210,38,'X-ray view of the molded package','#C7C8CC',12,'middle');
+  return h;
+};
+DRAW.saw=function(o,done){
+  const base=122, xs=[21,119,217,315], w=84, gx=[105,203,301];
+  let h=rect(10,base,400,12,'#6F8FB3')+txt(14,base+10,'Dicing tape','#F7F7F8',10);
+  if(o.unavailable) return h;
+  if(!done('cut')){
+    h+=rect(21,52,378,70,'#2A2B30');
+    gx.forEach(x=>{ h+='<line x1="'+(x+7)+'" y1="52" x2="'+(x+7)+'" y2="'+base+'" stroke="#B0B1B7" stroke-dasharray="3 3"/>'; });
+    return h+txt(210,40,'Molded strip on tape, cut lines marked','#C7C8CC',12,'middle');
+  }
+  xs.forEach(x=>{ h+=rect(x,52,w,70,'#2A2B30'); });
+  if(o.incomplete) h+=rect(21,100,378,22,'#2A2B30');
+  const np=o.tapeThrough?12:Math.min(10,o.depth*0.15);
+  gx.forEach(x=>{ if(np>0) h+=rect(x,base,14,np,BG); });
+  const cp=Math.max(2,Math.min(18,o.chip*0.5));
+  gx.forEach(x=>{
+    h+='<polygon points="'+(x-cp)+',52 '+x+',52 '+x+','+(52+cp)+'" fill="'+BG+'"/>';
+    h+='<polygon points="'+(x+14)+',52 '+(x+14+cp)+',52 '+(x+14)+','+(52+cp)+'" fill="'+BG+'"/>';
+  });
+  if(o.scratched>0) xs.forEach(x=>{ h+='<line x1="'+(x+10)+'" y1="60" x2="'+(x+w-10)+'" y2="92" stroke="#FF6B61" stroke-width="2"/>'; });
+  h+=txt(210,40,S.measured?('Chip '+fmt(o.chip,0)+' µm'+(o.scratched>0?' · scratches on '+o.scratched+' of 20 units':'')):'Cut complete','#F7F7F8',12,'middle');
+  return h;
+};
+DRAW.test=function(o,done){
+  if(o.unavailable) return '';
+  const ran=done('run'); let h='';
+  for(let i=0;i<20;i++){
+    const r=Math.floor(i/10), c=i%10, x=15+c*40, y=30+r*52;
+    let fill='#63646A', stroke='#797A80', lab='', sw=1.5;
+    if(ran){
+      const u=o.units[i];
+      if(u==='good'){ fill='#7FCE7A'; }
+      else if(u==='caught'){ fill='#FF6B61'; lab='×'; }
+      else if(u==='falsefail'){ fill='#D9A441'; lab='!'; }
+      else { fill='#7FCE7A'; stroke='#FF6B61'; lab='?'; sw=3; }
+    }
+    h+='<rect x="'+x+'" y="'+y+'" width="32" height="32" rx="5" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+    if(lab) h+=txt(x+16,y+22,lab,'#2A2B30',16,'middle');
+  }
+  if(ran){
+    h+=txt(15,128,'Green: passed. Red ×: defect caught.','#F7F7F8',11);
+    h+=txt(15,145,'Amber !: good unit wrongly failed.','#F7F7F8',11);
+    h+=txt(15,162,'Outlined ?: defective unit that passed.','#F7F7F8',11);
+  } else h+=txt(15,134,'20 units on the tray, not yet tested.','#C7C8CC',12);
+  return h;
+};
+
+Object.assign(NEED,{
+  diebond:['dispense_ms','bond_force','cure_temp','cure_min'],
+  wirebond:['bond_force','us_power','bond_time','stage_temp','loop_height'],
+  mold:['mold_temp','pressure','transfer_s','cure_s'],
+  saw:['spindle_krpm','feed_mms','coolant_lpm','cut_depth_um'],
+  test:['vdd','test_temp','test_ms','contact_gf']
+});
+
+
+/* ====== top view: thin-film interference colours and plan-view drawings ====== */
+const FC={};
+function _g(x,m,s1,s2){ const t=(x-m)/(x<m?s1:s2); return Math.exp(-0.5*t*t); }
+/* Approximate colour of a transparent film (refractive index nf, thickness d in nm) on bare silicon, viewed at normal incidence. */
+function filmColor(nf,d){
+  d=Math.max(0,d); const key=nf+'|'+(Math.round(d/2)*2);
+  if(FC[key]) return FC[key];
+  let X=0,Y=0,Z=0,Y0=0;
+  for(let l=400;l<=700;l+=10){
+    const ns=3.55+1.9e5/(l*l), r01=(1-nf)/(1+nf), r12=(nf-ns)/(nf+ns);
+    const ph=-4*Math.PI*nf*d/l, c=Math.cos(ph), s=Math.sin(ph);
+    const nr=r01+r12*c, ni=r12*s, dr=1+r01*r12*c, di=r01*r12*s;
+    const R=(nr*nr+ni*ni)/(dr*dr+di*di);
+    const bb=1/(Math.pow(l*1e-9,5)*(Math.exp(1.4388e-2/(l*1e-9*6500))-1));
+    const cx=1.056*_g(l,599.8,37.9,31.0)+0.362*_g(l,442.0,16.0,26.7)-0.065*_g(l,501.1,20.4,26.2);
+    const cy=0.821*_g(l,568.8,46.9,40.5)+0.286*_g(l,530.9,16.3,31.1);
+    const cz=1.217*_g(l,437.0,11.8,36.0)+0.681*_g(l,459.0,26.0,13.8);
+    X+=R*bb*cx; Y+=R*bb*cy; Z+=R*bb*cz; Y0+=bb*cy;
+  }
+  const k=1.35/Y0; X*=k; Y*=k; Z*=k;
+  const lin=[3.2406*X-1.5372*Y-0.4986*Z, -0.9689*X+1.8758*Y+0.0415*Z, 0.0557*X-0.2040*Y+1.0570*Z];
+  const gm=v=>{ v=Math.max(0,Math.min(1,v)); return Math.round(255*(v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055)); };
+  return FC[key]='rgb('+lin.map(gm).join(',')+')';
+}
+const SIB=filmColor(1.46,0);          /* bare polished silicon */
+const COPPER='#B87333', PURPLE='#5B4A86', GOLD='#D9A441', EMCK='#2A2B30';
+let _wid=0;
+function waferDisc(stops,cells){
+  const id='wg'+(++_wid), cx=110, cy=100, R=88;
+  let h='<defs><radialGradient id="'+id+'" cx="50%" cy="50%" r="50%">'+stops.map(s=>'<stop offset="'+s[0]+'" stop-color="'+s[1]+'"/>').join('')+'</radialGradient>'+
+    '<linearGradient id="sh'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>'+
+    '<clipPath id="cl'+id+'"><circle cx="'+cx+'" cy="'+cy+'" r="'+R+'"/></clipPath></defs>';
+  h+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="url(#'+id+')" stroke="#B9BCC4" stroke-width="1.5"/>';
+  if(cells) h+='<g clip-path="url(#cl'+id+')">'+cells+'</g>';
+  h+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="url(#sh'+id+')"/>';
+  h+='<circle cx="'+cx+'" cy="'+(cy+R)+'" r="5" fill="'+BG+'"/>';
+  return h;
+}
+function dieCells(fn){
+  const cx=110, cy=100, R=88, c=16; let s='';
+  for(let i=0;i<Math.ceil(2*R/c);i++) for(let j=0;j<Math.ceil(2*R/c);j++){
+    const x=cx-R+i*c, y=cy-R+j*c;
+    if([[x,y],[x+c,y],[x,y+c],[x+c,y+c]].every(p=>Math.hypot(p[0]-cx,p[1]-cy)<R-3)) s+=fn(x,y,c);
+  }
+  return s;
+}
+function colourChart(nf,max,val,label){
+  const id='cc'+(++_wid), x=232, y=88, w=170, hh=22;
+  let st=''; for(let k=0;k<=40;k++) st+='<stop offset="'+(k/40)+'" stop-color="'+filmColor(nf,max*k/40)+'"/>';
+  let h='<defs><linearGradient id="'+id+'" x1="0" x2="1" y1="0" y2="0">'+st+'</linearGradient></defs>';
+  h+=txt(x,y-12,label,'#F7F7F8',11);
+  h+=rect(x,y,w,hh,'url(#'+id+')',' stroke="#B9BCC4"');
+  [0,0.5,1].forEach(f=>{ h+=txt(x+f*w,y+hh+16,fmt(max*f,0)+(f===1?' nm':''),'#F7F7F8',10,f===0?'start':(f===1?'end':'middle')); });
+  if(val!=null && val>=0){ const px=x+Math.max(0,Math.min(1,val/max))*w; h+='<polygon points="'+(px-6)+','+(y-3)+' '+(px+6)+','+(y-3)+' '+px+','+(y+7)+'" fill="#F7F7F8"/>'; }
+  return h;
+}
+function lines(x,y,arr,fill){ return arr.map((t,i)=>txt(x,y+i*17,t,fill||'#F7F7F8',11)).join(''); }
+const TOP={
+  litho(o,done){
+    const coated=done('coat'), exposed=done('expose'), dev=done('dev'), tnm=o.thickness*1000;
+    const c=coated?filmColor(1.6,tnm):SIB;
+    let cells='';
+    if(dev){
+      const ratio=o.cd/((R.model&&R.model.cd_target_um)||1), ow=Math.max(3,Math.min(13,8*ratio));
+      cells=dieCells((x,y,w)=>rect(x,y,w,w,'none',' stroke="rgba(0,0,0,.28)" stroke-width=".6"')+rect(x+(w-ow)/2,y+(w-ow)/2,ow,ow,o.eff<0.85?c:SIB));
+    } else if(exposed){ cells=dieCells((x,y,w)=>rect(x,y,w,w,'none',' stroke="rgba(0,0,0,.08)" stroke-width=".6"')); }
+    let h=waferDisc([[0,c],[1,c]],cells);
+    h+=txt(232,34,coated?(dev?'Developed pattern':(exposed?'Exposed, latent image':'Resist coated')):'Primed bare silicon','#F7F7F8',12);
+    h+=txt(232,52,'Colour shows resist thickness.','#D0D1D6',11);
+    h+=colourChart(1.6,1600,(S.measured&&coated)?tnm:-1,'Resist colour chart (approx.)');
+    if(dev) h+=lines(232,150,['Openings show the silicon','below. Their size follows','the measured linewidth.'],'#D0D1D6');
+    return h;
+  },
+  etch(o,done){
+    const etched=done('etch'), stripped=done('strip'), cOx=filmColor(1.46,o.film);
+    const rem=Math.max(0,o.film-o.depth), co=rem>2?filmColor(1.46,rem):SIB;
+    let cells='';
+    if(stripped) cells=dieCells((x,y,w)=>rect(x,y,w,w,'none',' stroke="rgba(0,0,0,.25)" stroke-width=".6"')+rect(x+4,y+4,w-8,w-8,co));
+    let h=waferDisc([[0,cOx],[1,cOx]],cells);
+    h+=txt(232,34,stripped?'Resist stripped':(etched?'Etched, resist still on':'Oxide, resist-masked'),'#F7F7F8',12);
+    h+=txt(232,52,'Colour shows oxide thickness.','#D0D1D6',11);
+    h+=colourChart(1.46,1000,S.measured?(stripped?rem:o.film):-1,'Oxide colour chart (approx.)');
+    if(stripped) h+=lines(232,150,[rem>2?('Residue in openings: '+fmt(rem,0)+' nm'):'Openings cleared to silicon.',o.siLoss>10?'Silicon attacked below.':'Silicon intact.'],rem>2||o.siLoss>10?'#FFC0BA':'#98DE92');
+    return h;
+  },
+  implant(o,done){
+    const imp=done('implant'), ann=done('anneal'), c=filmColor(1.46,25);
+    const tint=ann?'#58C7B9':'#C9605A';
+    let cells='';
+    if(imp) cells=dieCells((x,y,w)=>rect(x,y,w,w,'none',' stroke="rgba(0,0,0,.22)" stroke-width=".6"')+rect(x+4,y+4,w-8,w-8,tint,' opacity=".85"'));
+    let h=waferDisc([[0,c],[1,c]],cells);
+    h+=txt(232,34,ann?'Annealed, dopants active':(imp?'Implanted, crystal damaged':'Screen oxide, resist-masked'),'#F7F7F8',12);
+    h+=rect(232,58,12,12,'#C9605A')+txt(250,69,'Damaged silicon','#F7F7F8',11);
+    h+=rect(232,78,12,12,'#58C7B9')+txt(250,89,'Activated dopant region','#F7F7F8',11);
+    h+=lines(232,118,['Schematic: implanted regions','are not visible on a real','wafer. Use the four-point','probe to see their effect.'],'#D0D1D6');
+    return h;
+  },
+  cvd(o,done){
+    if(!done('dep')){ return waferDisc([[0,SIB],[1,SIB]])+txt(232,34,'Bare silicon wafer','#F7F7F8',12)+txt(232,52,'Oxide is deposited in the PECVD chamber.','#D0D1D6',11); }
+    const stops=[0,0.25,0.5,0.75,1].map(r=>[r,filmColor(1.46,o.th*(1+o.uni/100*(1-2*r*r)))]);
+    let h=waferDisc(stops);
+    h+=txt(232,34,'Oxide film deposited','#F7F7F8',12)+txt(232,52,'Colour shows oxide thickness.','#D0D1D6',11);
+    h+=colourChart(1.46,1000,S.measured?o.th:-1,'Oxide colour chart (approx.)');
+    if(S.measured) h+=lines(232,150,['Centre '+fmt(o.th*(1+o.uni/100),0)+' nm','Edge '+fmt(o.th*(1-o.uni/100),0)+' nm','Non-uniformity '+fmt(o.uni,1)+' %']);
+    return h;
+  },
+  metal(o,done){
+    if(!done('dep')){ const b='rgb(120,118,126)'; return waferDisc([[0,b],[1,b]])+txt(232,34,'Ti/TiN barrier in place','#F7F7F8',12)+txt(232,52,'Aluminium is sputtered next.','#D0D1D6',11); }
+    const d=Math.min(30,o.uni*4);
+    let h=waferDisc([[0,'rgb('+(214+d/2|0)+','+(217+d/2|0)+','+(223+d/2|0)+')'],[0.6,'#C5C8CF'],[1,'rgb('+(180-d|0)+','+(184-d|0)+','+(192-d|0)+')']]);
+    if(o.hillock){ let dots=''; for(let i=0;i<60;i++){ const a=i*2.399, r=Math.sqrt((i+1)/60)*80; dots+='<circle cx="'+(110+r*Math.cos(a)).toFixed(1)+'" cy="'+(100+r*Math.sin(a)).toFixed(1)+'" r="1.4" fill="#fff" opacity=".9"/>'; } h+=dots; }
+    h+=txt(232,34,'Aluminium film','#F7F7F8',12);
+    h+=lines(232,58,['Colour does not show','thickness for metal.','Use the four-point probe','and the profilometer.'],'#D0D1D6');
+    if(o.hillock) h+=txt(232,140,'White specks: hillocks','#FFC0BA',11);
+    return h;
+  },
+  diebond(o,done){
+    let h=rect(20,36,180,130,COPPER,' rx="4"')+txt(26,52,'Lead frame pad','#F7F7F8',11);
+    if(o.unavailable) return h;
+    if(!done('bond')) return h+txt(232,34,'Clean pad','#F7F7F8',12)+txt(232,52,'Epoxy and die are placed next.','#D0D1D6',11);
+    const cured=done('cure'), ec=cured?'#9EA2AB':'#C9CCD3', fw=Math.max(2,Math.min(10,o.blt*0.25));
+    const dx=75, dy=66, ds=70;
+    h+=rect(dx-fw,dy-fw,ds+2*fw,ds+2*fw,ec,' rx="5"');
+    if(o.under){ h+=rect(dx+ds,dy-fw,fw+2,ds+2*fw,COPPER)+rect(dx-fw,dy+ds,ds+2*fw,fw+2,COPPER); }
+    h+=rect(dx,dy,ds,ds,PURPLE);
+    for(let i=0;i<6;i++){ const p=dx+8+i*10.5; h+=rect(p,dy+3,5,5,GOLD)+rect(p,dy+ds-8,5,5,GOLD); }
+    if(o.over) h+='<ellipse cx="'+(dx+ds-14)+'" cy="'+(dy+16)+'" rx="22" ry="14" fill="'+ec+'" opacity=".9"/>'+txt(dx+ds/2,dy+ds+fw+16,'epoxy on the die top and pads','#FFC0BA',10,'middle');
+    h+=txt(232,34,cured?'Epoxy cured':'Die placed, epoxy wet','#F7F7F8',12);
+    h+=lines(232,56,[o.under?'Fillet incomplete on two sides.':(o.over?'Too much epoxy: on the die top.':'Fillet visible on all sides.'),'Voids are not visible from above;','they show on X-ray.'],o.under||o.over?'#FFC0BA':'#D0D1D6');
+    if(S.measured) h+=lines(232,120,['Bond line '+fmt(o.blt,1)+' µm','Voids '+fmt(o.voids,1)+' %','Die shear '+fmt(o.shear,2)+' kgf']);
+    return h;
+  },
+  wirebond(o,done){
+    let h=rect(70,70,160,60,PURPLE);
+    for(let i=0;i<6;i++){ const px=84+i*25; h+=rect(px,73,6,6,GOLD)+rect(px,121,6,6,GOLD); }
+    for(let i=0;i<6;i++){ const px=80+i*25; h+=rect(px,24,14,38,COPPER)+rect(px,138,14,38,COPPER); }
+    if(o.unavailable) return h;
+    if(!done('bond')) return h+txt(232,34,'Die attached','#F7F7F8',12)+txt(232,52,'Wires are bonded next.','#D0D1D6',11);
+    const r=Math.max(2.5,Math.min(7,o.ball*0.1)), lifted=(o.shear<o.shearMin)?2:0;
+    for(let i=0;i<6;i++){
+      const px=87+i*25, bad=i<lifted;
+      h+='<line x1="'+px+'" y1="76" x2="'+(px+0)+'" y2="55" stroke="'+(bad?'#FF8F87':GOLD)+'" stroke-width="1.6"'+(bad?' stroke-dasharray="3 2"':'')+'/>';
+      h+='<line x1="'+px+'" y1="124" x2="'+px+'" y2="145" stroke="'+GOLD+'" stroke-width="1.6"/>';
+      h+='<circle cx="'+px+'" cy="76" r="'+r+'" fill="'+(bad?'#FF8F87':GOLD)+'"/><circle cx="'+px+'" cy="124" r="'+r+'" fill="'+GOLD+'"/>';
+      if(o.Rk>1.8) h+='<circle cx="'+px+'" cy="76" r="'+(r+3)+'" fill="none" stroke="#FF8F87" stroke-width="1.2"/>';
+    }
+    h+=txt(232,34,'Gold wires bonded','#F7F7F8',12);
+    h+=lines(232,56,['Ball size follows force','and ultrasonic power.','Loop height is shown in','the cross-section.'],'#D0D1D6');
+    if(lifted) h+=txt(232,134,'Dashed red: lifted bonds','#FFC0BA',11);
+    if(o.Rk>1.8) h+=txt(232,151,'Red rings: cratering risk','#FFC0BA',11);
+    if(S.measured) h+=txt(232,168,'Ball '+fmt(o.ball,0)+' µm · shear '+fmt(o.shear,0)+' gf','#F7F7F8',11);
+    return h;
+  },
+  mold(o,done){
+    const x0=24, y0=44, W=190, H=112;
+    let h=rect(x0,y0,W,H,COPPER,' rx="6"')+rect(x0+70,y0+34,50,44,PURPLE);
+    for(let i=0;i<4;i++){ h+='<line x1="'+(x0+78+i*11)+'" y1="'+(y0+34)+'" x2="'+(x0+20)+'" y2="'+(y0+20+i*24)+'" stroke="'+GOLD+'" stroke-width="1.3"/>'; }
+    for(let i=0;i<4;i++){ h+='<line x1="'+(x0+78+i*11)+'" y1="'+(y0+78)+'" x2="'+(x0+W-20)+'" y2="'+(y0+20+i*24)+'" stroke="'+GOLD+'" stroke-width="1.3"/>'; }
+    if(o.unavailable) return h;
+    if(!done('press')) return h+txt(232,34,'Wire-bonded strip','#F7F7F8',12)+txt(232,52,'Molded in the press next.','#D0D1D6',11);
+    const fw=W*Math.max(0,Math.min(100,o.fill))/100;
+    h+=rect(x0,y0,fw,H,EMCK,' rx="6"');
+    const vp=[[40,30],[70,90],[100,20],[130,95],[150,40],[60,60],[165,80],[110,60],[90,100],[30,95],[140,15],[175,55]];
+    const n=Math.min(12,Math.round(o.voids*3));
+    for(let i=0;i<n;i++) if(vp[i][0]<fw) h+='<circle cx="'+(x0+vp[i][0])+'" cy="'+(y0+vp[i][1])+'" r="3" fill="#8C8D93"/>';
+    h+=txt(x0-2,y0-6,'gate','#D0D1D6',10)+txt(x0+W,y0-6,'vent','#D0D1D6',10,'end');
+    if(o.fill<99) h+=txt(x0+W/2,y0+H+18,'Short shot: open cavity at the vent end','#FFC0BA',11,'middle');
+    h+=txt(232,34,'Molded package','#F7F7F8',12);
+    h+=lines(232,56,['Black: cured compound.','Light dots: surface voids.',o.fill<99?'Open area: unfilled cavity.':'Cavity fully filled.'],'#D0D1D6');
+    if(S.measured) h+=lines(232,120,['Fill '+fmt(o.fill,0)+' %','Wire sweep '+fmt(o.sweep,1)+' %','Cure '+fmt(o.cure,0)+' %']);
+    return h;
+  },
+  saw(o,done){
+    const cut=done('cut'), w=44, g=6, h0=46, y0=52, x0=22;
+    let h=rect(14,y0-8,212,2*h0+g+16,'#6F8FB3',' rx="4"');
+    const nS=Math.round(8*Math.min(1,o.scratched/20*3));
+    for(let r=0;r<2;r++) for(let c=0;c<4;c++){
+      let x=x0+c*(w+g), y=y0+r*(h0+g);
+      if(cut&&o.tapeThrough){ x+=((r*4+c)*7%5)-2; y+=((r*4+c)*5%5)-2; }
+      if(!cut){ h+=rect(x-(c?g/2:0),y-(r?g/2:0),w+(c<3?g/2:0)+(c?g/2:0),h0+(r<1?g/2:0)+(r?g/2:0),EMCK); }
+      else if(o.incomplete){ h+=rect(x,y,w,h0,EMCK)+rect(x+w,y+4,g,h0-8,EMCK)+rect(x+4,y+h0,w-8,g,EMCK); }
+      else { h+=rect(x,y,w,h0,EMCK); }
+      if(cut&&!o.tapeThrough&&!o.incomplete){
+        const cp=Math.max(1.5,Math.min(9,o.chip*0.22));
+        [[x,y,1,1],[x+w,y,-1,1],[x,y+h0,1,-1],[x+w,y+h0,-1,-1]].forEach(p=>{ h+='<polygon points="'+p[0]+','+p[1]+' '+(p[0]+p[2]*cp)+','+p[1]+' '+p[0]+','+(p[1]+p[3]*cp)+'" fill="#6F8FB3"/>'; });
+      }
+      if(cut&&(r*4+c)<nS) h+='<line x1="'+(x+6)+'" y1="'+(y+8)+'" x2="'+(x+w-6)+'" y2="'+(y+h0-10)+'" stroke="#FF8F87" stroke-width="1.6"/>';
+    }
+    h+=txt(232,34,cut?'Strip after cutting':'Molded strip on tape','#F7F7F8',12);
+    if(!cut) return h+txt(232,52,'Cut lines are between units.','#D0D1D6',11);
+    h+=lines(232,56,[o.incomplete?'Cut too shallow: units joined.':(o.tapeThrough?'Tape cut: units scattered.':'Units separated cleanly.'),'Notched corners are chips.','Red lines are scratches.'],o.incomplete||o.tapeThrough?'#FFC0BA':'#D0D1D6');
+    if(S.measured) h+=lines(232,120,['Chip '+fmt(o.chip,0)+' µm','Scratched '+o.scratched+' of 20 units']);
+    return h;
+  }
+};
+function renderTop(){
+  const card=$('#topCard'), sv=$('#topview');
+  const o=S.outcome||computeOutcome();
+  const type=modelType();
+  if(!TOP[type] || o.unavailable){ card.hidden=true; return; }
+  const done=id=>{ const i=R.steps.findIndex(s=>s.id===id); return i>=0 && S.stepDone[i]; };
+  card.hidden=false;
+  sv.innerHTML=TOP[type](o,done);
+}
+
+
+/* ------------------------------ views ------------------------------ */
+function renderChips(){
+  const c=$('#chips'); c.innerHTML='';
+  R.steps.forEach((st,i)=>{
+    const d=document.createElement('span');
+    d.className='chip'+(S.stepDone[i]?' done':(i===S.si&&!S.finished?' cur':''));
+    d.textContent=(i+1)+'. '+st.title; c.appendChild(d);
+  });
+}
+function renderScene(){
+  const sv=$('#scene'); const n=R.stations.length;
+  const w=104, gap=(840-n*w)/(n+1), y=30, h=84;
+  const cur=R.steps[Math.min(S.si,R.steps.length-1)].station;
+  const visited=new Set(); R.steps.forEach((st,i)=>{ if(S.stepDone[i]) visited.add(st.station); });
+  let html='<line x1="'+(gap+w/2)+'" y1="'+(y+h/2)+'" x2="'+(840-gap-w/2)+'" y2="'+(y+h/2)+'" stroke="#797A80" stroke-width="2" stroke-dasharray="4 5"/>';
+  let curX=gap+w/2;
+  R.stations.forEach((s,i)=>{
+    const x=gap+i*(w+gap);
+    const cls='st'+(s.id===cur&&!S.finished?' active':'')+(visited.has(s.id)&&s.id!==cur?' visited':'');
+    if(s.id===cur) curX=x+w/2;
+    html+='<g class="'+cls+'"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="10"/>'+
+      '<text x="'+(x+w/2)+'" y="'+(y+h/2-2)+'">'+esc(s.label)+'</text>'+
+      '<text class="s" x="'+(x+w/2)+'" y="'+(y+h/2+16)+'">'+esc(s.sub)+'</text></g>';
+  });
+  html+='<g id="wafer" style="transform:translate('+curX+'px,'+(y+h+22)+'px)"><circle r="13" fill="#B9BCC4" stroke="#F7F7F8" stroke-width="1.5"/><path d="M-4 12 L4 12" stroke="#48494E" stroke-width="2"/></g>';
+  sv.innerHTML=html;
+  const wrap=$('#sceneWrap');
+  if(wrap && wrap.scrollWidth>wrap.clientWidth){ const k=sv.getBoundingClientRect().width/840; wrap.scrollLeft=Math.max(0,curX*k-wrap.clientWidth/2); }
+}
+function renderXsec(){
+  const sv=$('#xsec'); const o=S.outcome||computeOutcome();
+  const done=id=>{ const i=R.steps.findIndex(s=>s.id===id); return i>=0 && S.stepDone[i]; };
+  const fn=DRAW[modelType()];
+  let h = fn ? fn(o,done) : '';
+  sv.innerHTML=h;
+  const m=$('#meas');
+  if(S.measured && o.unavailable) m.textContent='Outcome model unavailable: the loaded recipe lacks required parameter ids.';
+  else if(S.measured) m.innerHTML=o.metrics.map(x=>esc(x.label)+' '+fmt(x.value,x.dec)+' '+esc(x.unit)+' (target '+esc(x.target)+') '+(x.ok?'✔':'✘')).join('<br>');
+  else m.textContent='';
+}
+function renderStep(){
+  const card=$('#stepCard');
+  if(S.finished){ card.hidden=true; return; }
+  card.hidden=false;
+  const si=S.si, st=R.steps[si], next=nextActionIndex(si);
+  const stName=(R.stations.find(x=>x.id===st.station)||{}).label||st.station;
+  let h='<h2>Step '+(si+1)+' of '+R.steps.length+': '+esc(st.title)+'</h2>';
+  h+='<p class="meta">Station: '+esc(stName)+'</p>';
+  if(S.mode!=='assessment') h+='<p class="why">'+esc(st.why)+'</p>';
+  if(st.hazard && S.mode!=='assessment') h+='<div class="hazard" role="note"><span>Safety:</span><span>'+esc(st.hazard)+'</span></div>';
+  h+='<ol class="actions">';
+  st.actions.forEach((a,i)=>{
+    const done=isDone(si,i), isNext=(i===next), guided=S.mode==='guided';
+    const disabled=(guided && !isNext && !(a.type==='set' && done)) || (done && !(a.type==='set' && S.mode!=='assessment'));
+    const cls='act'+(done?' done':'')+((guided&&isNext)?' next':'');
+    const btn=a.type==='set'?(done?'Re-apply':'Apply settings'):(a.type==='measure'?(done?'Measured':'Measure'):(done?'Done':'Do'));
+    h+='<li class="'+cls+'"><span class="lbl">'+esc(a.label)+((S.mode!=='assessment'&&a.safety)?'<span class="tag">safety</span>':'')+'</span>'+
+       '<button type="button" data-act="'+i+'"'+(disabled?' disabled':'')+'>'+btn+'</button></li>';
+    if(a.type==='set') h+=paramsHtml(si);
+  });
+  h+='</ol>';
+  h+='<div id="msg" role="status" class="'+((S.msg&&S.msg.cls)||'')+'">'+esc((S.msg&&S.msg.text)||'')+'</div>';
+  if(st.final && stepActionsDone(si) && S.decision===null){
+    h+='<div class="decide"><div style="margin-bottom:8px">'+(S.outcome&&!S.outcome.unavailable?'Check the measurements, then decide:':'Decide:')+'</div>'+
+       '<button class="btn primary" type="button" data-decide="Pass">Pass: release the wafer</button> '+
+       '<button class="btn" type="button" data-decide="Rework">Rework: reject the wafer</button></div>';
+    if(S.outcome && S.mode!=='assessment' && S.outcome.flags.length)
+      h+='<ul style="margin:10px 0 0;padding-left:18px;color:var(--text-1);font-size:12.5px">'+S.outcome.flags.map(f=>'<li>'+esc(f.txt)+'</li>').join('')+'</ul>';
+  }
+  if(!st.final) h+='<div class="next-row"><button class="btn primary" type="button" id="btnNext"'+(stepComplete(si)?'':' disabled')+'>Continue to next step</button></div>';
+  card.innerHTML=h;
+  card.querySelectorAll('button[data-act]').forEach(b=>b.addEventListener('click',()=>perform(parseInt(b.dataset.act,10))));
+  card.querySelectorAll('button[data-decide]').forEach(b=>b.addEventListener('click',()=>decide(b.dataset.decide)));
+  const nb=card.querySelector('#btnNext'); if(nb) nb.addEventListener('click',advance);
+  card.querySelectorAll('.prow input').forEach(inp=>inp.addEventListener('input',()=>{ (S.vals[si]=S.vals[si]||{})[inp.dataset.p]=inp.value; }));
+}
+function paramsHtml(si){
+  const st=R.steps[si]; if(!st.params) return '';
+  const com=S.com[si];
+  let h='<li class="params" style="list-style:none">';
+  st.params.forEach(p=>{
+    const vals=S.vals[si]||{};
+    let v=vals[p.id];
+    if(v===undefined && S.mode==='guided') v=p.nominal;
+    if(v===undefined) v='';
+    if(S.mode==='guided'){ (S.vals[si]=S.vals[si]||{})[p.id]=v; }
+    let hint='';
+    if(S.mode==='guided') hint='Target '+p.nominal+' '+p.unit+' (± '+p.tol+')';
+    if(S.mode==='practice' && com && com[p.id]){
+      const g=com[p.id].g;
+      hint='<span class="g'+(g===1?'1':(g===0.5?'5':'0'))+'">'+(g===1?'Within tolerance':(g===0.5?'Close, outside tolerance':'Out of tolerance'))+'</span> · target '+p.nominal+' ± '+p.tol+' '+p.unit;
+    }
+    if(S.mode==='assessment' && com && com[p.id]) hint='Recorded';
+    h+='<div class="prow"><label for="p_'+p.id+'">'+esc(p.label)+' ('+esc(p.unit)+')</label>'+
+       '<input id="p_'+p.id+'" data-p="'+p.id+'" type="number" inputmode="decimal" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+esc(v)+'">'+
+       (hint?'<div class="hint">'+hint+'</div>':'')+'</div>';
+  });
+  return h+'</li>';
+}
+function renderLog(){
+  const l=$('#log'); l.innerHTML='';
+  if(!S.log.length){ l.innerHTML='<div class="empty">No actions yet.</div>'; return; }
+  S.log.slice(-40).forEach(e=>{
+    const d=document.createElement('div'); if(e.cls) d.className=e.cls;
+    d.textContent=String(e.t).padStart(3,' ')+' s  '+e.msg; l.appendChild(d);
+  });
+  l.scrollTop=l.scrollHeight;
+}
+function renderReport(){
+  const card=$('#reportCard');
+  if(!S.finished){ card.hidden=true; return; }
+  card.hidden=false;
+  const sc=scores(), o=S.outcome||computeOutcome(), W=R.weights;
+  let h='<h2>Procedure report</h2>';
+  h+='<div class="score">'+
+    '<div class="sbox"><div class="v">'+fmt(sc.total,0)+'</div><div class="k">Total of 100 · <span class="grade">'+sc.band+'</span></div></div>'+
+    '<div class="sbox"><div class="v">'+fmt(sc.orderS,0)+'/'+W.order+'</div><div class="k">Sequence ('+S.orderErr+' error'+(S.orderErr===1?'':'s')+')</div></div>'+
+    '<div class="sbox"><div class="v">'+fmt(sc.settingsS,0)+'/'+W.settings+'</div><div class="k">Settings and decision</div></div>'+
+    '<div class="sbox"><div class="v">'+fmt(sc.safetyS,0)+'/'+W.safety+'</div><div class="k">Safety ('+S.safetyViol+' violation'+(S.safetyViol===1?'':'s')+')</div></div></div>';
+  if(sc.failedWafer) h+='<p style="margin:0 0 10px;color:var(--warn)">The wafer missed its specification, so the total is capped below Competent.</p>';
+  h+='<p style="margin:0 0 10px;color:var(--text-1)">Decision: <b>'+esc(S.decision.choice)+'</b> — '+(S.decision.ok?'correct.':'expected '+esc(S.decision.correct)+' based on the measurements.')+'</p>';
+  if(o.metrics && o.metrics.length){
+    h+='<table><thead><tr><th>Measurement</th><th>Result</th><th>Target</th><th>Status</th></tr></thead><tbody>'+
+      o.metrics.map(x=>'<tr><td>'+esc(x.label)+'</td><td class="n">'+fmt(x.value,x.dec)+' '+esc(x.unit)+'</td><td class="n">'+esc(x.target)+'</td><td class="'+(x.ok?'g1':'g0')+'">'+(x.ok?'In spec':'Out of spec')+'</td></tr>').join('')+'</tbody></table>';
+  }
+  h+='<h2 style="margin-top:16px">Your settings</h2><table><thead><tr><th>Setting</th><th>You set</th><th>Target</th><th>Result</th></tr></thead><tbody>';
+  R.steps.forEach((st,si)=>{ (st.params||[]).forEach(p=>{
+    const c=(S.com[si]||{})[p.id], g=c?c.g:0;
+    h+='<tr><td>'+esc(p.label)+'</td><td class="n">'+(c?c.v:'—')+' '+esc(p.unit)+'</td><td class="n">'+p.nominal+' ± '+p.tol+'</td><td class="g'+(g===1?'1':(g===0.5?'5':'0'))+'">'+(g===1?'Within tolerance':(g===0.5?'Close':'Out'))+'</td></tr>';
+  }); });
+  h+='</tbody></table>';
+  if(o.flags && o.flags.length){
+    h+='<h2 style="margin-top:16px">What the process would show, and where to look</h2><table><thead><tr><th>Finding</th><th>Where to look in the digital twin</th></tr></thead><tbody>'+
+      o.flags.map(f=>'<tr><td>'+esc(f.txt)+'</td><td>'+esc(f.link)+'</td></tr>').join('')+'</tbody></table>';
+  } else h+='<p style="margin-top:12px;color:var(--ok)">No process deviations. The wafer meets every specification.</p>';
+  h+='<div class="next-row"><button class="btn primary" type="button" id="btnAgain">Run again</button><button class="btn" type="button" id="btnCopy">Copy report text</button><button class="btn" type="button" id="btnJson">Download result file</button></div>';
+  card.innerHTML=h;
+  $('#btnAgain').addEventListener('click',()=>{ fresh(); render(); });
+  $('#btnCopy').addEventListener('click',copyReport);
+  $('#btnJson').addEventListener('click',downloadResult);
+}
+function reportText(){
+  const sc=scores(), o=S.outcome||computeOutcome();
+  let t='IEG Wafer Fab SOP Trainer report\nProcess: '+R.meta.name+' ('+R.meta.source+')\nWork order: '+(R.wo?R.wo.id:'standard')+'\nMode: '+S.mode+'\n';
+  t+='Total: '+fmt(sc.total,0)+'/100 ('+sc.band+')  Sequence '+fmt(sc.orderS,0)+'/'+R.weights.order+'  Settings '+fmt(sc.settingsS,0)+'/'+R.weights.settings+'  Safety '+fmt(sc.safetyS,0)+'/'+R.weights.safety+'\n';
+  t+='Decision: '+S.decision.choice+(S.decision.ok?' (correct)':' (expected '+S.decision.correct+')')+'\n';
+  (o.metrics||[]).forEach(x=>{ t+=x.label+': '+fmt(x.value,x.dec)+' '+x.unit+' (target '+x.target+') '+(x.ok?'in spec':'OUT OF SPEC')+'\n'; });
+  (o.flags||[]).forEach(f=>{ t+='- '+f.txt+'\n'; });
+  return t;
+}
+function toastReport(t){ const b=$('#btnCopy'); if(b){ b.textContent=t; setTimeout(()=>{ b.textContent='Copy report text'; },2200); } }
+function copyReport(){
+  const t=reportText();
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toastReport('Report text copied.'),()=>toastReport('Copy blocked. Use the result file.'));
+  else toastReport('Copy not available. Use the result file.');
+}
+function downloadResult(){
+  const sc=scores(), o=S.outcome||computeOutcome();
+  const data={recipe:R.meta, workOrder:R.wo?R.wo.id:null, mode:S.mode, finished:new Date().toISOString(), scores:sc, errors:{sequence:S.orderErr,safety:S.safetyViol}, decision:S.decision, committed:S.com, outcome:o, log:S.log};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sop_result.json'; document.body.appendChild(a); a.click(); a.remove();
+}
+function renderNotice(){
+  $('#recipeNotice').innerHTML='<b>Recipe:</b> '+esc(R.meta.name)+'. <b>Data source:</b> '+esc(R.meta.source)+'. '+esc(R.meta.note||'');
+}
+function renderWO(){
+  const c=$('#woCard');
+  if(!R.wo){ c.hidden=true; c.innerHTML=''; return; }
+  c.hidden=false;
+  c.innerHTML='<h2>Work order '+esc(R.wo.id)+'</h2><ul style="margin:0;padding-left:18px;color:var(--text-1);font-size:13px">'+R.wo.brief.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>';
+}
+function render(){
+  renderNotice(); renderWO(); renderChips(); renderScene(); renderXsec(); renderTop(); renderStep(); renderLog(); renderReport();
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===S.mode?'true':'false'));
+}
+
+/* ------------------------------ wiring ------------------------------ */
+function fillMenu(){
+  const sel=$('#proc'); sel.innerHTML='';
+  [['front','Front-end (wafer fabrication)'],['back','Back-end (assembly and test)']].forEach(([g,label])=>{
+    const og=document.createElement('optgroup'); og.label=label;
+    ORDER.filter(id=>(LIB[id].meta.group||'front')===g).forEach(id=>{
+      const o=document.createElement('option'); o.value=id; o.textContent=LIB[id].meta.short; og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  if(CUR==='custom'){ const o=document.createElement('option'); o.value='custom'; o.textContent='Custom: '+(BASE.meta.short||BASE.meta.name); sel.appendChild(o); }
+  sel.value=CUR;
+  fillWO();
+}
+function fillWO(){
+  const sel=$('#wo'); sel.innerHTML='';
+  const add=(v,t)=>{ const o=document.createElement('option'); o.value=v; o.textContent=t; sel.appendChild(o); };
+  const list=BASE.workOrders||[];
+  if(!list.length){ sel.disabled=true; add('std','No work orders'); return; }
+  sel.disabled=false; add('random','Random each run'); add('std','Standard');
+  list.forEach(w=>add(w.id,w.label||w.id));
+  if(WOSEL!=='random' && WOSEL!=='std' && !list.some(w=>w.id===WOSEL)) WOSEL='random';
+  sel.value=WOSEL;
+}
+$('#proc').addEventListener('change',e=>{
+  if(e.target.value==='custom') return;
+  CUR=e.target.value; BASE=LIB[CUR]; WOSEL='random'; fillMenu(); fresh(); render();
+});
+$('#wo').addEventListener('change',e=>{ WOSEL=e.target.value; fresh(); render(); });
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ fresh(b.dataset.mode); render(); }));
+$('#btnReset').addEventListener('click',()=>{ fresh(); render(); });
+const dlg=$('#dlg');
+$('#btnRecipe').addEventListener('click',()=>{
+  $('#dlgInfo').textContent='Loaded: '+R.meta.name+' ('+R.meta.source+', version '+(R.meta.version||'n/a')+').';
+  $('#dlgMsg').textContent=''; if(dlg.showModal) dlg.showModal(); else dlg.setAttribute('open','');
+});
+$('#dlgClose').addEventListener('click',()=>dlg.close?dlg.close():dlg.removeAttribute('open'));
+$('#btnDefault').addEventListener('click',()=>{
+  if(CUR==='custom') CUR='litho';
+  BASE=LIB[CUR]; WOSEL='std'; fillMenu(); fresh(); render();
+  $('#dlgInfo').textContent='Loaded: '+R.meta.name+' ('+R.meta.source+').'; $('#dlgMsg').style.color='var(--ok)'; $('#dlgMsg').textContent='Standard data restored.';
+});
+$('#btnExport').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(BASE,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='recipe_'+((BASE.model&&BASE.model.type)||'litho')+'.json'; document.body.appendChild(a); a.click(); a.remove();
+});
+$('#fileIn').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const j=JSON.parse(rd.result);
+      if(!j.steps||!Array.isArray(j.steps)||!j.stations||!j.weights||!j.meta) throw new Error('Missing meta, weights, stations or steps.');
+      const sids=new Set(j.stations.map(s=>s.id));
+      for(const st of j.steps){
+        if(!sids.has(st.station)) throw new Error('Step "'+st.id+'" uses unknown station "'+st.station+'".');
+        if(!st.actions||!st.actions.length) throw new Error('Step "'+st.id+'" has no actions.');
+      }
+      const last=j.steps[j.steps.length-1];
+      if(!last.final) throw new Error('The last step must have "final": true.');
+      if(!last.actions.some(a=>a.type==='measure')) throw new Error('The final step needs an action with "type": "measure".');
+      j.model=j.model||{type:'litho'}; if(!j.model.type) j.model.type='litho';
+      if(!OUT[j.model.type]) throw new Error('Unknown model type "'+j.model.type+'".');
+      for(const id of NEED[j.model.type]){ let ok=false; for(const st of j.steps) for(const p of (st.params||[])) if(p.id===id) ok=true; if(!ok) throw new Error('Missing parameter id "'+id+'" required by the '+j.model.type+' model.'); }
+      BASE=j; CUR='custom'; WOSEL='random'; fillMenu(); fresh(); render();
+      $('#dlgInfo').textContent='Loaded: '+R.meta.name+' ('+R.meta.source+').'; $('#dlgMsg').textContent='Recipe loaded. The session was restarted.'; $('#dlgMsg').style.color='var(--ok)';
+    }catch(err){ $('#dlgMsg').textContent='Could not load this file: '+err.message; $('#dlgMsg').style.color='var(--bad)'; }
+    e.target.value='';
+  };
+  rd.readAsText(f);
+});
+
+fillMenu(); fresh('guided'); render();
+</script>
+</body>
+</html>
